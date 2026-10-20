@@ -18,15 +18,19 @@ fi
 STAGING="/tmp/pyshield_deb_staging"
 rm -rf "$STAGING"
 mkdir -p "$STAGING/DEBIAN"
-mkdir -p "$STAGING/opt/PyShield Studio"
+mkdir -p "$STAGING/opt/pyshield-studio"
 mkdir -p "$STAGING/usr/bin"
 mkdir -p "$STAGING/usr/share/applications"
 
 # Copy unpacked app
-cp -a dist-electron/linux-unpacked/* "$STAGING/opt/PyShield Studio/"
+cp -a dist-electron/linux-unpacked/* "$STAGING/opt/pyshield-studio/"
 
-# Symlink executable to /usr/bin
-ln -sf "/opt/PyShield Studio/pyshield-studio" "$STAGING/usr/bin/pyshield-studio"
+# Create launcher script in /usr/bin
+cat << "EOF" > "$STAGING/usr/bin/pyshield-studio"
+#!/bin/sh
+exec "/opt/pyshield-studio/pyshield-studio" "$@"
+EOF
+chmod 0755 "$STAGING/usr/bin/pyshield-studio"
 
 # Copy icons
 for size in 16x16 32x32 48x48 64x64 128x128 256x256 512x512; do
@@ -38,7 +42,7 @@ done
 cat << "EOF" > "$STAGING/usr/share/applications/pyshield-studio.desktop"
 [Desktop Entry]
 Name=PyShield Studio
-Exec="/opt/PyShield Studio/pyshield-studio" %U
+Exec=/opt/pyshield-studio/pyshield-studio %U
 Terminal=false
 Type=Application
 Icon=pyshield-studio
@@ -65,13 +69,13 @@ Description: PyShield Studio - Offline Proctored Python Notebook & Security IDE
 EOF
 
 # Set sandbox permissions and create postinst script
-chmod 4755 "$STAGING/opt/PyShield Studio/chrome-sandbox" 2>/dev/null || true
+chmod 4755 "$STAGING/opt/pyshield-studio/chrome-sandbox" 2>/dev/null || true
 
 cat << "EOF" > "$STAGING/DEBIAN/postinst"
 #!/bin/sh
 set -e
-if [ -f "/opt/PyShield Studio/chrome-sandbox" ]; then
-  chmod 4755 "/opt/PyShield Studio/chrome-sandbox" || true
+if [ -f "/opt/pyshield-studio/chrome-sandbox" ]; then
+  chmod 4755 "/opt/pyshield-studio/chrome-sandbox" || true
 fi
 EOF
 chmod 0755 "$STAGING/DEBIAN/postinst"
