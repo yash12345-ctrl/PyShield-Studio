@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './LoginScreen.css';
 import { API_BASE_URL } from '../config';
+import appLogo from '../assets/app_logo.png';
 import {
   ShieldCheck,
   Wifi,
@@ -269,7 +270,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
             <div className="branding-hero">
               <img
-                src="/app_logo.png"
+                src={appLogo}
                 alt="PyShield 3D Logo"
                 className="brand-logo-img-large"
               />

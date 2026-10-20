@@ -5,6 +5,7 @@ import Dataset from './datase';
 import { FileExplore } from './file_explore';
 import { UpdateWindow } from '../update_window/update_window';
 import { API_BASE_URL, WS_BASE_URL } from '../config';
+import appLogo from '../assets/app_logo.png';
 import {
   Play,
   RotateCcw,
@@ -1441,7 +1442,7 @@ export const NotebookWorkspace: React.FC<NotebookWorkspaceProps> = ({ session, o
           </button>
 
           <div className="notebook-brand-mark">
-            <img src="/app_logo.png" alt="Logo" style={{ width: '24px', height: '24px' }} />
+            <img src={appLogo} alt="Logo" style={{ width: '24px', height: '24px' }} />
             <span>PyShield Studio</span>
           </div>
 
