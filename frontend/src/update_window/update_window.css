@@ -543,3 +543,193 @@
     box-shadow: 0 0 10px rgba(37, 99, 235, 0.9);
   }
 }
+
+/* ==========================================================================
+   Multi-Platform OS Selector & Package Cards
+   ========================================================================== */
+
+.os-selector-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.os-selector-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  background: var(--bg-hover, #f1f5f9);
+  padding: 3px;
+  border-radius: 8px;
+  border: 1px solid var(--border-subtle, #e2e8f0);
+}
+
+.os-tab-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted, #64748b);
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.os-tab-btn:hover {
+  color: var(--text-main, #0f172a);
+}
+
+.os-tab-btn.active {
+  background: #ffffff;
+  color: #2563eb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.dark-theme .os-tab-btn.active {
+  background: #1e293b;
+  color: #60a5fa;
+}
+
+.os-detected-tag {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.dark-theme .os-detected-tag {
+  background: #1e3a8a;
+  color: #bfdbfe;
+}
+
+/* Package download cards */
+.platform-packages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.platform-pkg-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: var(--bg-hover, #f8fafc);
+  border: 1px solid var(--border-subtle, #e2e8f0);
+}
+
+.dark-theme .platform-pkg-card {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+.pkg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pkg-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-main, #0f172a);
+}
+
+.dark-theme .pkg-title-group {
+  color: #f1f5f9;
+}
+
+.pkg-size-badge {
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.dark-theme .pkg-size-badge {
+  background: #334155;
+  color: #94a3b8;
+}
+
+.pkg-command-box {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0f172a;
+  color: #38bdf8;
+  padding: 5px 8px;
+  border-radius: 5px;
+  font-family: monospace;
+  font-size: 10.5px;
+}
+
+.pkg-command-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pkg-copy-btn {
+  background: transparent;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 2px 4px;
+  display: flex;
+  align-items: center;
+  transition: color 0.15s ease;
+}
+
+.pkg-copy-btn:hover {
+  color: #ffffff;
+}
+
+.pkg-actions-row {
+  display: flex;
+  gap: 6px;
+}
+
+.pkg-dl-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 5px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #2563eb;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.pkg-dl-btn:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+}
+
+.dark-theme .pkg-dl-btn {
+  background: #1e293b;
+  border-color: #475569;
+  color: #60a5fa;
+}
+
+.dark-theme .pkg-dl-btn:hover {
+  background: #334155;
+}

@@ -10,9 +10,15 @@ if [ -d "$HOME/.nvm/versions/node" ]; then
   export PATH="$HOME/.nvm/versions/node/$LATEST_NODE/bin:$PATH"
 fi
 
-if [ ! -d "dist-electron/linux-unpacked" ]; then
-  echo "==> Building frontend and linux-unpacked..."
-  npx electron-builder --linux --dir
+UNPACKED_DIR="dist-electron/linux/linux-unpacked"
+if [ ! -d "$UNPACKED_DIR" ]; then
+  if [ -d "dist-electron/linux-unpacked" ]; then
+    UNPACKED_DIR="dist-electron/linux-unpacked"
+  else
+    echo "==> Building frontend and linux-unpacked..."
+    npx electron-builder --linux --dir
+    UNPACKED_DIR="dist-electron/linux-unpacked"
+  fi
 fi
 
 STAGING="/tmp/pyshield_deb_staging"
@@ -23,7 +29,7 @@ mkdir -p "$STAGING/usr/bin"
 mkdir -p "$STAGING/usr/share/applications"
 
 # Copy unpacked app
-cp -a dist-electron/linux-unpacked/* "$STAGING/opt/pyshield-studio/"
+cp -a "$UNPACKED_DIR"/* "$STAGING/opt/pyshield-studio/"
 
 # Create launcher script in /usr/bin
 cat << "EOF" > "$STAGING/usr/bin/pyshield-studio"
@@ -80,9 +86,9 @@ fi
 EOF
 chmod 0755 "$STAGING/DEBIAN/postinst"
 
-# Build DEB using native dpkg-deb
-mkdir -p dist-electron
-dpkg-deb --build --root-owner-group "$STAGING" "dist-electron/pyshield-studio_1.0.1_amd64.deb"
+# Build DEB using native dpkg-deb into dist-electron/linux
+mkdir -p dist-electron/linux
+dpkg-deb --build --root-owner-group "$STAGING" "dist-electron/linux/pyshield-studio_1.0.1_amd64.deb"
 
 rm -rf "$STAGING"
-echo "==> Debian package generated successfully at dist-electron/pyshield-studio_1.0.1_amd64.deb"
+echo "==> Debian package generated successfully at dist-electron/linux/pyshield-studio_1.0.1_amd64.deb"

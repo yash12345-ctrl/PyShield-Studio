@@ -459,8 +459,9 @@ export const NotebookWorkspace: React.FC<NotebookWorkspaceProps> = ({ session, o
     "Real-time variable inspector and memory tracking",
     "Integrated file explorer and offline notebook persistence (.ipynb)"
   ]);
-  const [updateReleaseDate, setUpdateReleaseDate] = useState<string>('April 2025');
-  const [updatePackageSize, setUpdatePackageSize] = useState<string>('42.8 MB');
+  const [updateReleaseDate, setUpdateReleaseDate] = useState<string>('October 2026');
+  const [updatePackageSize, setUpdatePackageSize] = useState<string>('95 MB - 156 MB');
+  const [updateDownloads, setUpdateDownloads] = useState<any>(null);
   const [lastCheckedTime, setLastCheckedTime] = useState<string | null>(null);
 
   const isVersionNewer = (latest: string, current: string): boolean => {
@@ -474,31 +475,40 @@ export const NotebookWorkspace: React.FC<NotebookWorkspaceProps> = ({ session, o
     return lPat > cPat;
   };
 
-  const startUpdateSequence = async (targetVer?: string) => {
+  const startUpdateSequence = async (targetVer?: string, targetPlatform?: 'linux' | 'windows') => {
     const versionToInstall = targetVer || latestVersion;
     if (isUpdating || isUpdateReady) return;
+
+    const osName = targetPlatform
+      ? (targetPlatform === 'windows' ? 'Windows' : 'Linux')
+      : ((window as any).electronAPI?.platform === 'win32' ? 'Windows' : 'Linux');
+    const bundleName = osName === 'Windows'
+      ? `PyShield-Studio-v${versionToInstall}-Windows.zip`
+      : `pyshield-studio_${versionToInstall}_amd64.deb`;
+    const bundleSize = osName === 'Windows' ? '156 MB' : '95 MB';
+
     setIsUpdating(true);
     setUpdateProgress(12);
-    setUpdateStep('Connecting to release distribution node...');
+    setUpdateStep(`Connecting to release distribution node for ${osName}...`);
 
     await new Promise(r => setTimeout(r, 600));
     setUpdateProgress(38);
-    setUpdateStep(`Downloading update bundle (${updatePackageSize})...`);
+    setUpdateStep(`Downloading ${osName} bundle (${bundleName} - ${bundleSize})...`);
 
     await new Promise(r => setTimeout(r, 700));
     setUpdateProgress(72);
-    setUpdateStep('Verifying cryptographic SHA-256 package hash...');
+    setUpdateStep(`Verifying cryptographic SHA-256 package hash for ${osName}...`);
 
     await new Promise(r => setTimeout(r, 600));
     setUpdateProgress(95);
-    setUpdateStep('Staging binary patches and finalizing installation...');
+    setUpdateStep(`Staging ${osName} binary patches & finalizing installation...`);
 
     await new Promise(r => setTimeout(r, 500));
     setUpdateProgress(100);
-    setUpdateStep('Update successfully installed! Ready to restart.');
+    setUpdateStep(`Update v${versionToInstall} successfully installed for ${osName}! Ready to restart.`);
     setIsUpdating(false);
     setIsUpdateReady(true);
-    showToast(`✓ PyShield Studio v${versionToInstall} update ready! Restart to apply.`);
+    showToast(`✓ PyShield Studio v${versionToInstall} (${osName}) update ready! Restart to apply.`);
   };
 
   const checkForUpdates = async (silent: boolean = false) => {
@@ -533,6 +543,7 @@ export const NotebookWorkspace: React.FC<NotebookWorkspaceProps> = ({ session, o
         if (data.changelog) setUpdateChangelog(data.changelog);
         if (data.release_date) setUpdateReleaseDate(data.release_date);
         if (data.package_size) setUpdatePackageSize(data.package_size);
+        if (data.downloads) setUpdateDownloads(data.downloads);
 
         const savedVer = localStorage.getItem('pyshield_app_version');
         const activeCurrent = (!savedVer || savedVer.startsWith('2.')) ? '1.0.0' : savedVer;
@@ -1786,13 +1797,14 @@ export const NotebookWorkspace: React.FC<NotebookWorkspaceProps> = ({ session, o
                 releaseDate={updateReleaseDate}
                 packageSize={updatePackageSize}
                 lastCheckedTime={lastCheckedTime}
+                downloads={updateDownloads}
                 onToggleAutoUpdate={(val) => {
                   setAutoUpdateEnabled(val);
                   localStorage.setItem('pyshield_auto_update', String(val));
                   showToast(`Auto-update ${val ? 'enabled' : 'disabled'}`);
                 }}
                 onCheckForUpdates={() => checkForUpdates(false)}
-                onStartUpdate={() => startUpdateSequence()}
+                onStartUpdate={(plat) => startUpdateSequence(undefined, plat)}
                 onApplyRestart={applyRestart}
                 onSimulateVersionBump={simulateVersionBump}
               />

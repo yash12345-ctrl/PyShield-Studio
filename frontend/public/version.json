@@ -5,12 +5,35 @@
   "channel": "stable",
   "mandatory": false,
   "changelog": [
-    "Fixed logo display in Windows desktop app",
+    "Linux AppImage & Debian package (.deb) distribution added",
+    "Fixed logo display across Windows & Linux desktop environments",
     "Enabled live Google Cloud backend connectivity",
     "Enhanced session security and isolated SQLite workspace",
     "Performance and startup speed improvements"
   ],
-  "download_url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.1/PyShield-Studio-v1.0.1-Windows.zip",
-  "package_size": "156 MB",
+  "download_url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/tag/v1.0.1",
+  "downloads": {
+    "windows": {
+      "name": "Windows Portable ZIP",
+      "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.1/PyShield-Studio-v1.0.1-Windows.zip",
+      "size": "156 MB",
+      "filename": "PyShield-Studio-v1.0.1-Windows.zip"
+    },
+    "linux": {
+      "appimage": {
+        "name": "Linux Universal AppImage",
+        "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.1/PyShield-Studio-1.0.1.AppImage",
+        "size": "125 MB",
+        "filename": "PyShield Studio-1.0.1.AppImage"
+      },
+      "deb": {
+        "name": "Debian / Ubuntu Package (.deb)",
+        "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.1/pyshield-studio_1.0.1_amd64.deb",
+        "size": "95 MB",
+        "filename": "pyshield-studio_1.0.1_amd64.deb"
+      }
+    }
+  },
+  "package_size": "95 MB - 156 MB",
   "checksum": "sha256-v101-release"
 }

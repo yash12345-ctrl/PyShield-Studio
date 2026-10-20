@@ -17,10 +17,10 @@
     "electron:start": "electron electron/main.cjs",
     "electron:dev": "npm run build && electron electron/main.cjs",
     "electron:pack": "npm run build && electron-builder --dir",
-    "electron:build:linux": "npm run build && electron-builder --linux AppImage",
-    "electron:build:deb": "npm run build && bash build-deb.sh",
-    "electron:build:all:linux": "npm run build && electron-builder --linux AppImage && bash build-deb.sh",
-    "electron:build:win": "npm run build && electron-builder --win nsis"
+    "electron:build:linux": "npm run build && electron-builder --linux AppImage && mkdir -p dist-electron/linux && mv dist-electron/*.AppImage dist-electron/linux-unpacked dist-electron/linux/ 2>/dev/null || true",
+    "electron:build:deb": "bash build-deb.sh",
+    "electron:build:all:linux": "npm run build && electron-builder --linux AppImage && mkdir -p dist-electron/linux && mv dist-electron/*.AppImage dist-electron/linux-unpacked dist-electron/linux/ 2>/dev/null || true && bash build-deb.sh",
+    "electron:build:win": "npm run build && electron-builder --win nsis && mkdir -p dist-electron/windows && mv dist-electron/*.exe dist-electron/*.zip dist-electron/*.nsis.7z dist-electron/win-unpacked dist-electron/windows/ 2>/dev/null || true"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
