@@ -1,16 +1,16 @@
 {
   "current_version": "1.0.0",
-  "latest_version": "1.0.0",
-  "release_date": "2025-10-21",
+  "latest_version": "1.0.1",
+  "release_date": "October 2026",
   "channel": "stable",
   "mandatory": false,
   "changelog": [
-    "Initial official release (v1.0.0) of Python Notebook IDE",
-    "Isolated Python kernel execution with WebSocket bridge",
-    "Real-time variable inspector and memory tracking",
-    "Integrated file explorer and offline notebook persistence (.ipynb)"
+    "Fixed logo display in Windows desktop app",
+    "Enabled live Google Cloud backend connectivity",
+    "Enhanced session security and isolated SQLite workspace",
+    "Performance and startup speed improvements"
   ],
-  "download_url": "https://releases.pyshield.local/v1.0.0/update-package.zip",
-  "package_size": "42.8 MB",
-  "checksum": "sha256-9f8a3c2b1e4d7a8f0b5c6e9d2a1f4b7c8e0d3a5f6b8c9e1d4a7f0b2c5e8d1a4f"
+  "download_url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.1/PyShield-Studio-v1.0.1-Windows.zip",
+  "package_size": "156 MB",
+  "checksum": "sha256-v101-release"
 }
