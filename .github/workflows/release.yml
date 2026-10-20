@@ -1,0 +1,77 @@
+name: Build & Release Desktop Apps
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Desktop Packages (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows
+          - os: ubuntu-latest
+            platform: linux
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: frontend
+        run: npm ci
+
+      # Build Windows packages on real Windows runner
+      - name: Build Windows Package
+        if: matrix.platform == 'windows'
+        working-directory: frontend
+        run: |
+          npm run build
+          npx electron-builder --win nsis portable
+          mkdir -p dist-electron/windows
+          mv dist-electron/*.exe dist-electron/*.zip dist-electron/windows/ 2>/dev/null || true
+
+      # Build Linux packages (AppImage and deb) on real Ubuntu runner
+      - name: Build Linux Packages (AppImage & deb)
+        if: matrix.platform == 'linux'
+        working-directory: frontend
+        run: |
+          sudo apt-get update && sudo apt-get install -y binutils
+          npm run build
+          npx electron-builder --linux AppImage
+          mkdir -p dist-electron/linux
+          mv dist-electron/*.AppImage dist-electron/linux/ 2>/dev/null || true
+          bash build-deb.sh
+
+      # Automatically publish all generated installer files to GitHub Releases
+      - name: Upload to GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            frontend/dist-electron/windows/*.exe
+            frontend/dist-electron/windows/*.zip
+            frontend/dist-electron/linux/*.AppImage
+            frontend/dist-electron/linux/*.deb
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
