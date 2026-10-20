@@ -57,11 +57,13 @@ Comment=PyShield Studio - Offline Proctored Python Notebook & Security IDE
 Categories=Development;IDE;
 EOF
 
+APP_VERSION=$(node -p "require('./package.json').version || '1.0.0'")
+
 # Create Debian control file
 INSTALLED_SIZE=$(du -sk "$STAGING/opt" | cut -f1)
 cat << EOF > "$STAGING/DEBIAN/control"
 Package: pyshield-studio
-Version: 1.0.1
+Version: $APP_VERSION
 Section: devel
 Priority: optional
 Architecture: amd64
@@ -88,7 +90,7 @@ chmod 0755 "$STAGING/DEBIAN/postinst"
 
 # Build DEB using native dpkg-deb into dist-electron/linux
 mkdir -p dist-electron/linux
-dpkg-deb --build --root-owner-group "$STAGING" "dist-electron/linux/pyshield-studio_1.0.1_amd64.deb"
+dpkg-deb --build --root-owner-group "$STAGING" "dist-electron/linux/pyshield-studio_${APP_VERSION}_amd64.deb"
 
 rm -rf "$STAGING"
-echo "==> Debian package generated successfully at dist-electron/linux/pyshield-studio_1.0.1_amd64.deb"
+echo "==> Debian package generated successfully at dist-electron/linux/pyshield-studio_${APP_VERSION}_amd64.deb"

@@ -1,39 +1,38 @@
 {
-  "current_version": "1.0.0",
-  "latest_version": "1.0.1",
+  "current_version": "1.0.1",
+  "latest_version": "1.0.2",
   "release_date": "October 2026",
   "channel": "stable",
   "mandatory": false,
   "changelog": [
-    "Linux AppImage & Debian package (.deb) distribution added",
-    "Fixed logo display across Windows & Linux desktop environments",
-    "Enabled live Google Cloud backend connectivity",
-    "Enhanced session security and isolated SQLite workspace",
-    "Performance and startup speed improvements"
+    "Automated CI/CD multi-platform build & release pipeline",
+    "Dedicated Windows & Linux desktop distribution directories",
+    "Integrated Update Manager with live OS detection and package downloaders",
+    "Security and kernel isolation performance enhancements"
   ],
-  "download_url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/tag/v1.0.1",
+  "download_url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/tag/v1.0.2",
   "downloads": {
     "windows": {
       "name": "Windows Portable ZIP",
-      "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.1/PyShield-Studio-v1.0.1-Windows.zip",
+      "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.2/PyShield-Studio-v1.0.2-Windows.zip",
       "size": "156 MB",
-      "filename": "PyShield-Studio-v1.0.1-Windows.zip"
+      "filename": "PyShield-Studio-v1.0.2-Windows.zip"
     },
     "linux": {
       "appimage": {
         "name": "Linux Universal AppImage",
-        "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.1/PyShield-Studio-1.0.1.AppImage",
+        "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.2/PyShield-Studio-1.0.2.AppImage",
         "size": "125 MB",
-        "filename": "PyShield Studio-1.0.1.AppImage"
+        "filename": "PyShield Studio-1.0.2.AppImage"
       },
       "deb": {
         "name": "Debian / Ubuntu Package (.deb)",
-        "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.1/pyshield-studio_1.0.1_amd64.deb",
+        "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.2/pyshield-studio_1.0.2_amd64.deb",
         "size": "95 MB",
-        "filename": "pyshield-studio_1.0.1_amd64.deb"
+        "filename": "pyshield-studio_1.0.2_amd64.deb"
       }
     }
   },
   "package_size": "95 MB - 156 MB",
-  "checksum": "sha256-v101-release"
+  "checksum": "sha256-v102-release"
 }
