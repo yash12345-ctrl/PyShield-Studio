@@ -3,6 +3,8 @@
   "productName": "PyShield Studio",
   "version": "1.0.1",
   "description": "PyShield Studio - Offline Proctored Python Notebook & Security IDE",
+  "author": "PyShield Team <support@pyshield.dev>",
+  "homepage": "https://github.com/yash12345-ctrl/PyShield-Studio",
   "private": true,
   "type": "module",
   "main": "electron/main.cjs",
@@ -15,7 +17,7 @@
     "electron:start": "electron electron/main.cjs",
     "electron:dev": "npm run build && electron electron/main.cjs",
     "electron:pack": "npm run build && electron-builder --dir",
-    "electron:build:linux": "npm run build && electron-builder --linux AppImage",
+    "electron:build:linux": "npm run build && electron-builder --linux AppImage deb",
     "electron:build:win": "npm run build && electron-builder --win nsis"
   },
   "dependencies": {
@@ -51,7 +53,8 @@
       "icon": "electron/icons",
       "category": "Development",
       "target": [
-        "dir"
+        "AppImage",
+        "deb"
       ]
     },
     "win": {
