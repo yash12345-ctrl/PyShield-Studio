@@ -77,25 +77,26 @@ Pre-built binaries for **Windows** and **Linux** are compiled and published auto
 ```mermaid
 graph TD
     subgraph Client ["Desktop Client (Electron / React)"]
-        UI[Monaco Notebook & Update Manager]
-        Preload[Secure Context Preload Bridge]
+        UI["Monaco Notebook & Update Manager"]
+        Preload["Secure Context Preload Bridge"]
         UI <--> Preload
     end
 
     subgraph Bridge ["Backend Gateway (Tornado / Python)"]
-        REST[REST API Server (:5001)]
-        WS[WebSocket Bridge]
-        Watchdog[Proctoring Watchdog]
-        DB[(SQLite Candidate Database)]
+        REST["REST API Server (:5001)"]
+        WS["WebSocket Bridge"]
+        Watchdog["Proctoring Watchdog"]
+        DB[("SQLite Candidate Database")]
     end
 
     subgraph Kernel ["Execution Sandbox"]
-        ZMQ[ZeroMQ Channel]
-        PythonKernel[Isolated ipykernel Subprocess]
+        ZMQ["ZeroMQ Channel"]
+        PythonKernel["Isolated ipykernel Subprocess"]
     end
 
     Preload <-->|HTTP / WebSocket| Bridge
-    WS <-->|ZeroMQ IPC| ZMQ <--> PythonKernel
+    WS <-->|ZeroMQ IPC| ZMQ
+    ZMQ <--> PythonKernel
     REST <--> DB
 ```
 
