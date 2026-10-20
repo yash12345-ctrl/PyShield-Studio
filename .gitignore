@@ -24,6 +24,8 @@ node_modules/
 frontend/node_modules/
 dist/
 frontend/dist/
+dist-electron/
+frontend/dist-electron/
 dist-ssr/
 frontend/dist-ssr/
 .eslintcache

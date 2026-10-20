@@ -2,6 +2,7 @@
   "venvPath": "/home/yash-tomar/Documents/yash/python_notebook",
   "venv": ".venv",
   "pythonVersion": "3.12",
+  "reportIncompatibleMethodOverride": "none",
   "include": [
     "backend",
     "database"

@@ -1,14 +1,22 @@
 {
-  "name": "frontend",
+  "name": "pyshield-studio",
+  "productName": "PyShield Studio",
+  "version": "1.0.0",
+  "description": "PyShield Studio - Offline Proctored Python Notebook & Security IDE",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
     "backend": "../.venv/bin/python ../backend/run_backend.py",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron:start": "electron electron/main.cjs",
+    "electron:dev": "npm run build && electron electron/main.cjs",
+    "electron:pack": "npm run build && electron-builder --dir",
+    "electron:build:linux": "npm run build && electron-builder --linux AppImage",
+    "electron:build:win": "npm run build && electron-builder --win nsis"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
@@ -21,8 +29,44 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
     "@vitejs/plugin-react": "^6.1.1",
+    "electron": "^44.9.2",
+    "electron-builder": "^26.15.3",
     "oxlint": "^1.81.0",
     "typescript": "~6.0.2",
     "vite": "^8.3.0"
+  },
+  "build": {
+    "appId": "com.pyshield.studio",
+    "productName": "PyShield Studio",
+    "copyright": "Copyright © 2026 PyShield Studio",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "linux": {
+      "icon": "electron/icons",
+      "category": "Development",
+      "target": [
+        "dir"
+      ]
+    },
+    "win": {
+      "icon": "electron/icons/icon.ico",
+      "target": [
+        "nsis",
+        "portable"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "PyShield Studio"
+    }
   }
 }

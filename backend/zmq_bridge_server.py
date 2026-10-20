@@ -1,3 +1,4 @@
+# pyright: reportIncompatibleMethodOverride=false
 import os
 import sys
 import time
@@ -20,17 +21,20 @@ PORT = 5001
 kernel_manager = MappingKernelManager()
 
 class BaseApiHandler(tornado.web.RequestHandler):
-    def set_default_headers(self):
+    def set_default_headers(self) -> None:
         self.set_header("Access-Control-Allow-Origin", "*")
         self.set_header("Access-Control-Allow-Headers", "x-requested-with, content-type")
         self.set_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 
-    def options(self, *args, **kwargs):
+    def options(self, *args: Any, **kwargs: Any) -> None:
         self.set_status(204)
         self.finish()
 
+    def post(self, *args: Any, **kwargs: Any) -> Any:  # type: ignore[override]
+        pass
+
 class RegisterHandler(BaseApiHandler):
-    def post(self):
+    def post(self, *args: Any, **kwargs: Any) -> None:
         try:
             data = json.loads(self.request.body.decode('utf-8'))
             reg_no = data.get("registration_number", "").strip()
@@ -58,7 +62,7 @@ class RegisterHandler(BaseApiHandler):
             self.write(json.dumps({"status": "error", "message": str(e)}))
 
 class LoginHandler(BaseApiHandler):
-    def post(self):
+    def post(self, *args: Any, **kwargs: Any) -> None:
         try:
             data = json.loads(self.request.body.decode('utf-8'))
             reg_no = data.get("registration_number", "").strip()
@@ -87,7 +91,7 @@ class LoginHandler(BaseApiHandler):
             self.write(json.dumps({"status": "error", "message": str(e)}))
 
 class UserFoldersHandler(BaseApiHandler):
-    def get(self):
+    def get(self, *args: Any, **kwargs: Any) -> None:
         try:
             reg_no = self.get_argument("registration_number", "").strip().upper()
             if not reg_no:
@@ -109,7 +113,7 @@ class UserFoldersHandler(BaseApiHandler):
             self.set_header("Content-Type", "application/json")
             self.write(json.dumps({"status": "error", "message": str(e)}))
 
-    def post(self):
+    def post(self, *args: Any, **kwargs: Any) -> None:
         try:
             data = json.loads(self.request.body.decode('utf-8'))
             reg_no = data.get("registration_number", "").strip().upper()
@@ -138,7 +142,7 @@ class UserFoldersHandler(BaseApiHandler):
             self.write(json.dumps({"status": "error", "message": str(e)}))
 
 class HealthHandler(BaseApiHandler):
-    def get(self):
+    def get(self, *args: Any, **kwargs: Any) -> None:
         self.set_header("Content-Type", "application/json")
         self.write(json.dumps({
             "status": "ok",
@@ -147,7 +151,7 @@ class HealthHandler(BaseApiHandler):
         }))
 
 class VersionHandler(BaseApiHandler):
-    def get(self):
+    def get(self, *args: Any, **kwargs: Any) -> None:
         self.set_header("Content-Type", "application/json")
         version_file = os.path.join(PROJECT_ROOT, "version.json")
         if not os.path.exists(version_file):
@@ -178,7 +182,7 @@ class VersionHandler(BaseApiHandler):
             "status": "success"
         }))
 
-    def post(self):
+    def post(self, *args: Any, **kwargs: Any) -> None:
         self.set_header("Content-Type", "application/json")
         try:
             payload = json.loads(self.request.body.decode('utf-8'))
@@ -208,7 +212,7 @@ class VersionHandler(BaseApiHandler):
 
 
 class ExecuteHandler(BaseApiHandler):
-    async def post(self):
+    async def post(self, *args: Any, **kwargs: Any) -> Any:  # type: ignore[override]
         try:
             data = json.loads(self.request.body.decode('utf-8'))
             cell_id = data.get("cell_id", "cell-1")
@@ -237,12 +241,12 @@ class ExecuteHandler(BaseApiHandler):
             }))
 
 class KernelsListHandler(BaseApiHandler):
-    def get(self):
+    def get(self, *args: Any, **kwargs: Any) -> None:
         """GET /api/kernels - Lists all active kernels matching Jupyter specification."""
         self.set_header("Content-Type", "application/json")
         self.write(json.dumps(kernel_manager.list_kernels()))
 
-    def post(self):
+    def post(self, *args: Any, **kwargs: Any) -> None:
         """POST /api/kernels - Spawns a fresh kernel on dynamic ephemeral ports."""
         try:
             body = json.loads(self.request.body.decode('utf-8')) if self.request.body else {}
@@ -255,7 +259,7 @@ class KernelsListHandler(BaseApiHandler):
         self.write(json.dumps(km.get_info()))
 
 class KernelDetailHandler(BaseApiHandler):
-    def get(self, kernel_id: str):
+    def get(self, kernel_id: str = "", *args: Any, **kwargs: Any) -> None:
         """GET /api/kernels/<kernel_id> - Gets details of specific kernel."""
         info = kernel_manager.get_kernel_info(kernel_id)
         if not info:
@@ -266,7 +270,7 @@ class KernelDetailHandler(BaseApiHandler):
         self.set_header("Content-Type", "application/json")
         self.write(json.dumps(info))
 
-    def delete(self, kernel_id: str):
+    def delete(self, kernel_id: str = "", *args: Any, **kwargs: Any) -> None:
         """DELETE /api/kernels/<kernel_id> - Shuts down and cleans up specific kernel."""
         success = kernel_manager.shutdown_kernel(kernel_id)
         if not success:
@@ -277,21 +281,21 @@ class KernelDetailHandler(BaseApiHandler):
         self.set_status(204)
 
 class KernelRestartHandler(BaseApiHandler):
-    async def post(self, kernel_id: str):
+    async def post(self, kernel_id: str = "", *args: Any, **kwargs: Any) -> Any:  # type: ignore[override]
         """POST /api/kernels/<kernel_id>/restart - Restarts specific kernel with dynamic ports."""
         res = await asyncio.to_thread(kernel_manager.restart_kernel, kernel_id, True)
         self.set_header("Content-Type", "application/json")
         self.write(json.dumps(res))
 
 class KernelInterruptHandler(BaseApiHandler):
-    async def post(self, kernel_id: str):
+    async def post(self, kernel_id: str = "", *args: Any, **kwargs: Any) -> Any:  # type: ignore[override]
         """POST /api/kernels/<kernel_id>/interrupt - Interrupts specific kernel."""
         res = await asyncio.to_thread(kernel_manager.interrupt_kernel, kernel_id)
         self.set_header("Content-Type", "application/json")
         self.write(json.dumps(res))
 
 class KernelCompleteHandler(BaseApiHandler):
-    async def post(self, kernel_id: str):
+    async def post(self, kernel_id: str = "", *args: Any, **kwargs: Any) -> Any:  # type: ignore[override]
         """POST /api/kernels/<kernel_id>/complete - Code completion via IPython runtime."""
         try:
             data = json.loads(self.request.body.decode('utf-8'))
@@ -306,7 +310,7 @@ class KernelCompleteHandler(BaseApiHandler):
             self.write(json.dumps({"status": "error", "message": str(e)}))
 
 class KernelInspectHandler(BaseApiHandler):
-    async def post(self, kernel_id: str):
+    async def post(self, kernel_id: str = "", *args: Any, **kwargs: Any) -> Any:  # type: ignore[override]
         """POST /api/kernels/<kernel_id>/inspect - Object documentation / tooltip."""
         try:
             data = json.loads(self.request.body.decode('utf-8'))
@@ -322,7 +326,7 @@ class KernelInspectHandler(BaseApiHandler):
             self.write(json.dumps({"status": "error", "message": str(e)}))
 
 class DatasetsHandler(BaseApiHandler):
-    def get(self):
+    def get(self, *args: Any, **kwargs: Any) -> None:
         try:
             lab = self.get_query_argument("lab", None)
             category = self.get_query_argument("category", None)
@@ -345,11 +349,11 @@ class KernelWebSocketHandler(tornado.websocket.WebSocketHandler):
     kernel_clients: Dict[str, Set['KernelWebSocketHandler']] = {}
     all_clients: Set['KernelWebSocketHandler'] = set()
 
-    def check_origin(self, origin):
+    def check_origin(self, origin: str) -> bool:
         # Allow connections from local frontend (Vite/Electron)
         return True
 
-    def open(self, kernel_id_path: Optional[str] = None):
+    def open(self, kernel_id_path: Optional[str] = None, *args: Any, **kwargs: Any) -> None:
         # Extract kernel_id from URL path (/api/kernels/<id>/channels) or query param (?kernel_id=xyz)
         kid = kernel_id_path or self.get_query_argument("kernel_id", None) or self.get_query_argument("session_id", None) or "default"
         self.kernel_id = kid
