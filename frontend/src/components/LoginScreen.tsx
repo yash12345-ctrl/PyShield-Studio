@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './LoginScreen.css';
+import { API_BASE_URL } from '../config';
 import {
   ShieldCheck,
   Wifi,
@@ -119,7 +120,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       setIsLoading(true);
 
       try {
-        const response = await fetch('http://127.0.0.1:5001/api/register', {
+        const response = await fetch(`${API_BASE_URL}/api/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -148,7 +149,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         }
       } catch {
         setIsLoading(false);
-        showToast('⚠️ Backend server unreachable on port 5001. Ensure zmq_bridge_server is running.');
+        showToast('⚠️ Backend server unreachable. Ensure bridge server is running.');
       }
       return;
     }
@@ -166,7 +167,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       let token = 'offline-' + Date.now();
       if (examCode.trim()) {
         try {
-          const resp = await fetch('http://127.0.0.1:5001/api/login', {
+          const resp = await fetch(`${API_BASE_URL}/api/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

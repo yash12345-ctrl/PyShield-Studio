@@ -23,6 +23,7 @@ import {
   ChevronRight
 } from 'lucide-react';
 import './select_folder.css';
+import { API_BASE_URL } from '../config';
 
 export interface UserFolder {
   id?: number;
@@ -94,7 +95,7 @@ export const SelectFolder: React.FC<SelectFolderProps> = ({
       setLoading(true);
       try {
         const resp = await fetch(
-          `http://127.0.0.1:5001/api/user-folders?registration_number=${encodeURIComponent(session.studentId)}`
+          `${API_BASE_URL}/api/user-folders?registration_number=${encodeURIComponent(session.studentId)}`
         );
         if (resp.ok) {
           const data = await resp.json();
@@ -188,7 +189,7 @@ export const SelectFolder: React.FC<SelectFolderProps> = ({
 
     // Try persisting to SQLite database via backend API
     try {
-      const resp = await fetch('http://127.0.0.1:5001/api/user-folders', {
+      const resp = await fetch(`${API_BASE_URL}/api/user-folders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -231,7 +232,7 @@ export const SelectFolder: React.FC<SelectFolderProps> = ({
 
     try {
       await fetch(
-        `http://127.0.0.1:5001/api/user-folders?registration_number=${encodeURIComponent(session.studentId)}&folder_name=${encodeURIComponent(folderName)}`,
+        `${API_BASE_URL}/api/user-folders?registration_number=${encodeURIComponent(session.studentId)}&folder_name=${encodeURIComponent(folderName)}`,
         { method: 'DELETE' }
       );
     } catch {}

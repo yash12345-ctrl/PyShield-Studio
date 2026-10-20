@@ -4,6 +4,7 @@ import './NotebookWorkspace.css';
 import Dataset from './datase';
 import { FileExplore } from './file_explore';
 import { UpdateWindow } from '../update_window/update_window';
+import { API_BASE_URL, WS_BASE_URL } from '../config';
 import {
   Play,
   RotateCcw,
@@ -504,7 +505,7 @@ export const NotebookWorkspace: React.FC<NotebookWorkspaceProps> = ({ session, o
     try {
       let data: any = null;
       try {
-        const res = await fetch('http://127.0.0.1:5001/api/version');
+        const res = await fetch(`${API_BASE_URL}/api/version`);
         if (res.ok) {
           data = await res.json();
         }
@@ -578,7 +579,7 @@ export const NotebookWorkspace: React.FC<NotebookWorkspaceProps> = ({ session, o
 
   const simulateVersionBump = async (newVer: string) => {
     try {
-      await fetch('http://127.0.0.1:5001/api/version', {
+      await fetch(`${API_BASE_URL}/api/version`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -883,8 +884,7 @@ export const NotebookWorkspace: React.FC<NotebookWorkspaceProps> = ({ session, o
       if (isUnmounted) return;
 
       try {
-        const host = window.location.hostname || '127.0.0.1';
-        const socket = new WebSocket(`ws://${host}:5001/ws?kernel_id=${encodeURIComponent(kernelIdRef.current)}`);
+        const socket = new WebSocket(`${WS_BASE_URL}/ws?kernel_id=${encodeURIComponent(kernelIdRef.current)}`);
         ws = socket;
         wsRef.current = socket;
 
@@ -1173,8 +1173,7 @@ export const NotebookWorkspace: React.FC<NotebookWorkspaceProps> = ({ session, o
       }));
     } else {
       // Direct HTTP execution against the IPython ZeroMQ Kernel
-      const host = window.location.hostname || '127.0.0.1';
-      fetch(`http://${host}:5001/api/execute`, {
+      fetch(`${API_BASE_URL}/api/execute`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ cell_id: cellId, code: targetCell.content, kernel_id: kernelIdRef.current })
@@ -1285,9 +1284,7 @@ export const NotebookWorkspace: React.FC<NotebookWorkspaceProps> = ({ session, o
             const code = model.getValue();
             const cursor_pos = model.getOffsetAt(position);
             const currentKid = kernelIdRef.current || 'default';
-            const host = window.location.hostname || '127.0.0.1';
-
-            const res = await fetch(`http://${host}:5001/api/kernels/${encodeURIComponent(currentKid)}/complete`, {
+            const res = await fetch(`${API_BASE_URL}/api/kernels/${encodeURIComponent(currentKid)}/complete`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ code, cursor_pos })
@@ -1346,9 +1343,7 @@ export const NotebookWorkspace: React.FC<NotebookWorkspaceProps> = ({ session, o
             const code = model.getValue();
             const cursor_pos = model.getOffsetAt(position);
             const currentKid = kernelIdRef.current || 'default';
-            const host = window.location.hostname || '127.0.0.1';
-
-            const res = await fetch(`http://${host}:5001/api/kernels/${encodeURIComponent(currentKid)}/inspect`, {
+            const res = await fetch(`${API_BASE_URL}/api/kernels/${encodeURIComponent(currentKid)}/inspect`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ code, cursor_pos, detail_level: 0 })

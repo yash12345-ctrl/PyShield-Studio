@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Database, Plus, Copy, Check } from 'lucide-react';
+import { API_BASE_URL } from '../config';
 import './datase.css';
 
 export interface LabDataset {
@@ -918,8 +919,7 @@ export const Dataset: React.FC<DatasetProps> = ({ onInsertCode, showToast }) => 
 
   // Fetch live datasets from local SQLite DB on mount
   useEffect(() => {
-    const host = window.location.hostname || '127.0.0.1';
-    fetch(`http://${host}:5001/api/datasets`)
+    fetch(`${API_BASE_URL}/api/datasets`)
       .then(res => res.json())
       .then(data => {
         if (data.status === 'success' && Array.isArray(data.datasets) && data.datasets.length > 0) {
