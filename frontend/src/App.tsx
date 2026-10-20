@@ -20,19 +20,18 @@ interface ActiveSession {
 function App() {
   const [session, setSession] = useState<ActiveSession | null>(() => {
     try {
-      // Purge any legacy shared localStorage session so opening a link in another tab/window cannot leak credentials
-      localStorage.removeItem(SESSION_STORAGE_KEY);
-
-      // Read strictly from sessionStorage (tab/window isolated)
-      const stored = sessionStorage.getItem(SESSION_STORAGE_KEY);
+      // Read from sessionStorage first, fallback to localStorage so closing the app window does not log out
+      const stored = sessionStorage.getItem(SESSION_STORAGE_KEY) || localStorage.getItem(SESSION_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (parsed && typeof parsed.studentId === 'string' && parsed.studentId.trim().length > 0) {
+          // Keep sessionStorage in sync
+          sessionStorage.setItem(SESSION_STORAGE_KEY, stored);
           return parsed;
         }
       }
     } catch (e) {
-      console.error('Failed to load session from sessionStorage', e);
+      console.error('Failed to load session from storage', e);
     }
     return null;
   });
@@ -44,12 +43,11 @@ function App() {
       selectedFolder: undefined,
     };
     try {
-      // Store strictly in sessionStorage for this tab only
-      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(sessionWithTime));
-      // Ensure localStorage has no session
-      localStorage.removeItem(SESSION_STORAGE_KEY);
+      const sessionStr = JSON.stringify(sessionWithTime);
+      sessionStorage.setItem(SESSION_STORAGE_KEY, sessionStr);
+      localStorage.setItem(SESSION_STORAGE_KEY, sessionStr);
     } catch (e) {
-      console.error('Failed to save session to sessionStorage', e);
+      console.error('Failed to save session to storage', e);
     }
     setSession(sessionWithTime);
   };
@@ -61,9 +59,11 @@ function App() {
       selectedFolder: folderName || undefined,
     };
     try {
-      sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(updated));
+      const sessionStr = JSON.stringify(updated);
+      sessionStorage.setItem(SESSION_STORAGE_KEY, sessionStr);
+      localStorage.setItem(SESSION_STORAGE_KEY, sessionStr);
     } catch (e) {
-      console.error('Failed to update session in sessionStorage', e);
+      console.error('Failed to update session in storage', e);
     }
     setSession(updated);
   };
@@ -79,7 +79,7 @@ function App() {
       sessionStorage.removeItem(SESSION_STORAGE_KEY);
       localStorage.removeItem(SESSION_STORAGE_KEY);
     } catch (e) {
-      console.error('Failed to clear session from sessionStorage', e);
+      console.error('Failed to clear session from storage', e);
     }
     setSession(null);
   };
