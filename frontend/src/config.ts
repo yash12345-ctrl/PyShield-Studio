@@ -1,6 +1,9 @@
 // Configuration for Backend API and WebSocket URLs
 // Supports local development, custom hostnames, Vercel, and Electron Desktop App
 
+const CLOUD_API_URL = 'https://8.231.74.188.sslip.io';
+const CLOUD_WS_URL = 'wss://8.231.74.188.sslip.io';
+
 const isElectron = (): boolean => {
   if (typeof window === 'undefined') return false;
   return (
@@ -15,9 +18,9 @@ const getEnvBackendUrl = (): string => {
     return (import.meta.env.VITE_BACKEND_URL as string).replace(/\/$/, '');
   }
 
-  // Desktop App (Electron) always connects to local bridge
+  // Desktop App connects to Cloud backend so friends can run it without needing Python installed
   if (isElectron()) {
-    return 'http://127.0.0.1:5001';
+    return CLOUD_API_URL;
   }
 
   // If on Vercel, use relative paths so Vercel rewrites proxy /api directly to the backend
@@ -39,14 +42,14 @@ const getEnvWsUrl = (): string => {
     return (import.meta.env.VITE_WS_URL as string).replace(/\/$/, '');
   }
 
-  // Desktop App (Electron) connects directly to local websocket
+  // Desktop App connects to secure WebSocket on Cloud backend
   if (isElectron()) {
-    return 'ws://127.0.0.1:5001';
+    return CLOUD_WS_URL;
   }
 
   // If on Vercel (HTTPS), connect to the secure SSL domain on Google Cloud
   if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
-    return 'wss://8.231.74.188.sslip.io';
+    return CLOUD_WS_URL;
   }
 
   if (typeof window !== 'undefined' && window.location.hostname && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
