@@ -1,0 +1,15 @@
+{
+  "venvPath": "/home/yash-tomar/Documents/yash/python_notebook",
+  "venv": ".venv",
+  "pythonVersion": "3.12",
+  "include": [
+    "backend",
+    "database"
+  ],
+  "extraPaths": [
+    ".",
+    "backend",
+    ".venv/lib/python3.12/site-packages",
+    "/home/yash-tomar/Documents/yash/python_notebook/.venv/lib/python3.12/site-packages"
+  ]
+}
