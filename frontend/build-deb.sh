@@ -1,9 +1,19 @@
 #!/usr/bin/env bash
 set -e
 
-# Build Vite frontend and electron unpacked linux dir
-echo "==> Building frontend and linux-unpacked..."
-npx electron-builder --linux --dir
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
+
+# Ensure Node/npx is in PATH if using NVM
+if [ -d "$HOME/.nvm/versions/node" ]; then
+  LATEST_NODE=$(ls "$HOME/.nvm/versions/node" | tail -n 1)
+  export PATH="$HOME/.nvm/versions/node/$LATEST_NODE/bin:$PATH"
+fi
+
+if [ ! -d "dist-electron/linux-unpacked" ]; then
+  echo "==> Building frontend and linux-unpacked..."
+  npx electron-builder --linux --dir
+fi
 
 STAGING="/tmp/pyshield_deb_staging"
 rm -rf "$STAGING"
@@ -53,6 +63,18 @@ Description: PyShield Studio - Offline Proctored Python Notebook & Security IDE
  PyShield Studio provides a secure, monitored environment for running and developing
  Python code with offline kernel execution and automated exam proctoring.
 EOF
+
+# Set sandbox permissions and create postinst script
+chmod 4755 "$STAGING/opt/PyShield Studio/chrome-sandbox" 2>/dev/null || true
+
+cat << "EOF" > "$STAGING/DEBIAN/postinst"
+#!/bin/sh
+set -e
+if [ -f "/opt/PyShield Studio/chrome-sandbox" ]; then
+  chmod 4755 "/opt/PyShield Studio/chrome-sandbox" || true
+fi
+EOF
+chmod 0755 "$STAGING/DEBIAN/postinst"
 
 # Build DEB using native dpkg-deb
 mkdir -p dist-electron
