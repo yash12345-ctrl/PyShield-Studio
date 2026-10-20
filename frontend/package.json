@@ -1,7 +1,7 @@
 {
   "name": "pyshield-studio",
   "productName": "PyShield Studio",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "PyShield Studio - Offline Proctored Python Notebook & Security IDE",
   "author": "PyShield Team <support@pyshield.dev>",
   "homepage": "https://github.com/yash12345-ctrl/PyShield-Studio",
