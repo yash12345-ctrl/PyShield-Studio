@@ -17,7 +17,9 @@
     "electron:start": "electron electron/main.cjs",
     "electron:dev": "npm run build && electron electron/main.cjs",
     "electron:pack": "npm run build && electron-builder --dir",
-    "electron:build:linux": "npm run build && electron-builder --linux AppImage deb",
+    "electron:build:linux": "npm run build && electron-builder --linux AppImage",
+    "electron:build:deb": "npm run build && bash build-deb.sh",
+    "electron:build:all:linux": "npm run build && electron-builder --linux AppImage && bash build-deb.sh",
     "electron:build:win": "npm run build && electron-builder --win nsis"
   },
   "dependencies": {
