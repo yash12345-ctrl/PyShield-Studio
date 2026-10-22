@@ -8,9 +8,17 @@
 ; 4. Clean Uninstaller to remove shortcuts and PATH entries
 ; ==============================================================================
 
-!include "MUI2.nsh"
 !include "nsDialogs.nsh"
 !include "LogicLib.nsh"
+
+; ------------------------------------------------------------------------------
+; Global State Variables (Declared globally so all macros recognise them)
+; ------------------------------------------------------------------------------
+Var TasksDialog
+Var CheckboxDesktop
+Var CheckboxDesktop_State
+Var CheckboxPath
+Var CheckboxPath_State
 
 ; ------------------------------------------------------------------------------
 ; Helper Macro: String Replace (for uninstaller PATH cleanup)
@@ -65,16 +73,10 @@ FunctionEnd
 !insertmacro DefineStrRep "un."
 
 ; ------------------------------------------------------------------------------
-; Installer UI Only (Excluded during Uninstaller Generation)
+; Installer Wizard Page (Skipped when building uninstaller binary)
 ; ------------------------------------------------------------------------------
 !ifndef BUILD_UNINSTALLER
 !ifndef UNINSTALLER_OUT_FILE
-
-Var TasksDialog
-Var CheckboxDesktop
-Var CheckboxDesktop_State
-Var CheckboxPath
-Var CheckboxPath_State
 
 ; Hook into electron-builder's assisted installer:
 ; Inserts the custom page right after the Directory selection page
@@ -83,10 +85,6 @@ Var CheckboxPath_State
 !macroend
 
 Function AdditionalTasksPageCreate
-  !ifdef MUI_HEADER_TEXT
-    !insertmacro MUI_HEADER_TEXT "Select Additional Tasks" "Which additional tasks should be performed?"
-  !endif
-
   nsDialogs::Create 1018
   Pop $TasksDialog
   ${If} $TasksDialog == error
