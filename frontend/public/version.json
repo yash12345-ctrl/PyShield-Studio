@@ -1,39 +1,39 @@
 {
-  "current_version": "1.0.2",
-  "latest_version": "1.0.3",
+  "current_version": "1.0.3",
+  "latest_version": "1.0.4",
   "release_date": "October 2026",
   "channel": "stable",
   "mandatory": false,
   "changelog": [
-    "Fixed session persistence so closing/canceling window stays logged in",
-    "Automated CI/CD multi-platform build & release pipeline",
-    "Dedicated Windows & Linux desktop distribution directories",
-    "Integrated Update Manager with live OS detection and package downloaders",
-    "Security and kernel isolation performance enhancements"
+    "Interactive Windows setup wizard with custom directory path picker",
+    "Optional desktop shortcut and system PATH integration checkboxes",
+    "Native .ipynb notebook file association and Explorer context menu",
+    "Clean uninstaller with environment PATH and registry cleanup",
+    "Automated CI/CD multi-platform build & release pipeline"
   ],
-  "download_url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/tag/v1.0.3",
+  "download_url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/tag/v1.0.4",
   "downloads": {
     "windows": {
-      "name": "Windows Portable ZIP",
-      "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.3/PyShield-Studio-v1.0.3-Windows.zip",
+      "name": "Windows Setup Installer (.exe)",
+      "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.4/PyShield.Studio.Setup.1.0.4.exe",
       "size": "156 MB",
-      "filename": "PyShield-Studio-v1.0.3-Windows.zip"
+      "filename": "PyShield Studio Setup 1.0.4.exe"
     },
     "linux": {
       "appimage": {
         "name": "Linux Universal AppImage",
-        "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.3/PyShield-Studio-1.0.3.AppImage",
+        "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.4/PyShield-Studio-1.0.4.AppImage",
         "size": "125 MB",
-        "filename": "PyShield Studio-1.0.3.AppImage"
+        "filename": "PyShield Studio-1.0.4.AppImage"
       },
       "deb": {
         "name": "Debian / Ubuntu Package (.deb)",
-        "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.3/pyshield-studio_1.0.3_amd64.deb",
+        "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.4/pyshield-studio_1.0.4_amd64.deb",
         "size": "95 MB",
-        "filename": "pyshield-studio_1.0.3_amd64.deb"
+        "filename": "pyshield-studio_1.0.4_amd64.deb"
       }
     }
   },
   "package_size": "95 MB - 156 MB",
-  "checksum": "sha256-v103-release"
+  "checksum": "sha256-v104-release"
 }

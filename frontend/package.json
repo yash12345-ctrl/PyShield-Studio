@@ -1,7 +1,7 @@
 {
   "name": "pyshield-studio",
   "productName": "PyShield Studio",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "PyShield Studio - Offline Proctored Python Notebook & Security IDE",
   "author": "PyShield Team <support@pyshield.dev>",
   "homepage": "https://github.com/yash12345-ctrl/PyShield-Studio",
@@ -66,12 +66,24 @@
         "portable"
       ]
     },
+    "fileAssociations": [
+      {
+        "ext": "ipynb",
+        "name": "Jupyter Notebook",
+        "description": "PyShield Studio Jupyter Notebook",
+        "icon": "electron/icons/icon.ico",
+        "role": "Editor"
+      }
+    ],
     "nsis": {
       "oneClick": false,
+      "perMachine": false,
       "allowToChangeInstallationDirectory": true,
-      "createDesktopShortcut": true,
+      "createDesktopShortcut": false,
       "createStartMenuShortcut": true,
-      "shortcutName": "PyShield Studio"
+      "shortcutName": "PyShield Studio",
+      "include": "electron/installer.nsh",
+      "runAfterFinish": true
     }
   }
 }
