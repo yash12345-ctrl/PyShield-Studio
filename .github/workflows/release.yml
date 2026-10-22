@@ -53,6 +53,8 @@ jobs:
         if: matrix.platform == 'windows'
         run: |
           python scripts/prepare_offline_python.py --platform windows
+        env:
+          PYTHONIOENCODING: utf-8
 
       # Build Windows packages on real Windows runner
       - name: Build Windows Package

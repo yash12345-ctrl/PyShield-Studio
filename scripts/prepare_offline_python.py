@@ -14,6 +14,18 @@ import urllib.request
 import subprocess
 import argparse
 
+# Force UTF-8 on Windows runners where default encoding is CP1252
+if hasattr(sys.stdout, "reconfigure"):
+    try:
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+if hasattr(sys.stderr, "reconfigure"):
+    try:
+        sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+    except Exception:
+        pass
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 RUNTIME_DIR = os.path.join(PROJECT_ROOT, "frontend", "python-runtime")
@@ -39,7 +51,7 @@ def download_file(url: str, dest_path: str):
             sys.stdout.flush()
 
     urllib.request.urlretrieve(url, dest_path, reporthook=report_progress)
-    print("\n✓ Download completed.")
+    print("\n[OK] Download completed.")
 
 def extract_archive(archive_path: str, target_dir: str):
     print(f"Extracting runtime to {target_dir}...")
@@ -73,7 +85,7 @@ def extract_archive(archive_path: str, target_dir: str):
             shutil.move(src, dst)
         shutil.rmtree(temp_extract)
 
-    print("✓ Extraction completed.")
+    print("[OK] Extraction completed.")
 
 def install_requirements(python_exe: str):
     if not os.path.exists(REQUIREMENTS_FILE):
@@ -87,7 +99,7 @@ def install_requirements(python_exe: str):
     subprocess.check_call([
         python_exe, "-m", "pip", "install", "--no-warn-script-location", "-r", REQUIREMENTS_FILE
     ])
-    print("✓ Offline dependencies successfully installed into runtime.")
+    print("[OK] Offline dependencies successfully installed into runtime.")
 
 def clean_runtime(target_dir: str):
     print("Cleaning unnecessary caches from bundled runtime...")
@@ -104,7 +116,7 @@ def clean_runtime(target_dir: str):
                     os.remove(os.path.join(root, f))
                 except Exception:
                     pass
-    print("✓ Bundled runtime optimized.")
+    print("[OK] Bundled runtime optimized.")
 
 def main():
     parser = argparse.ArgumentParser(description="Prepare offline standalone Python runtime for PyShield")
@@ -145,7 +157,7 @@ def main():
                 pass
 
     print(f"\n=======================================================")
-    print(f"✓ Standalone offline Python runtime is ready at:\n  {RUNTIME_DIR}")
+    print(f"[OK] Standalone offline Python runtime is ready at:\n  {RUNTIME_DIR}")
     print(f"=======================================================")
 
 if __name__ == "__main__":
