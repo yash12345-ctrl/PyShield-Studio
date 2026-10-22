@@ -8,13 +8,16 @@
 ; 4. Clean Uninstaller to remove shortcuts and PATH entries
 ; ==============================================================================
 
+; Disable NSIS strict compiler warnings treated as errors by electron-builder (-WX)
+!pragma warning disable 6000
+!pragma warning disable 6001
+
 !include "nsDialogs.nsh"
 !include "LogicLib.nsh"
 
 ; ------------------------------------------------------------------------------
-; Global State Variables (Declared globally so all macros recognise them)
+; Global State Variables
 ; ------------------------------------------------------------------------------
-Var TasksDialog
 Var CheckboxDesktop
 Var CheckboxDesktop_State
 Var CheckboxPath
@@ -86,8 +89,8 @@ FunctionEnd
 
 Function AdditionalTasksPageCreate
   nsDialogs::Create 1018
-  Pop $TasksDialog
-  ${If} $TasksDialog == error
+  Pop $0
+  ${If} $0 == error
     Abort
   ${EndIf}
 
@@ -166,6 +169,12 @@ FunctionEnd
 ; Uninstallation Hook: Clean up shortcuts and PATH
 ; ------------------------------------------------------------------------------
 !macro customUnInstall
+  ; Reference variables in uninstaller routine so compiler never considers them unreferenced
+  StrCpy $CheckboxDesktop ""
+  StrCpy $CheckboxPath ""
+  StrCpy $CheckboxDesktop_State ""
+  StrCpy $CheckboxPath_State ""
+
   DetailPrint "Cleaning up PyShield Studio desktop shortcuts..."
   Delete "$DESKTOP\${PRODUCT_NAME}.lnk"
 
