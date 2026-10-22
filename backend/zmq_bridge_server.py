@@ -666,9 +666,11 @@ def start_bridge_server():
         print(f"Initial kernel startup notice: {e}")
 
     def shutdown(sig, frame):
-        print("\nShutting down bridge server and cleaning up isolated kernels...")
-        kernel_manager.shutdown_all()
-        sys.exit(0)
+        try:
+            kernel_manager.shutdown_all()
+        except Exception:
+            pass
+        os._exit(0)
 
     signal.signal(signal.SIGINT, shutdown)
     signal.signal(signal.SIGTERM, shutdown)

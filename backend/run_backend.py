@@ -13,7 +13,7 @@ PYTHON_EXE = os.environ.get("PYSHIELD_PYTHON_EXE", sys.executable)
 def free_ports(ports=(5001,)):
     """Automatically frees the HTTP/WS bridge port if occupied by stale processes."""
     try:
-        import psutil
+        import psutil  # type: ignore
         current_pid = os.getpid()
         for conn in psutil.net_connections(kind='inet'):
             if conn.laddr and conn.laddr.port in ports and conn.pid and conn.pid != current_pid:
@@ -67,7 +67,6 @@ def main():
     print("\nPress Ctrl+C to terminate all backend services.\n")
 
     def signal_handler(sig, frame):
-        print("\nShutting down backend services...")
         try:
             bridge_proc.terminate()
             bridge_proc.wait(timeout=2)
@@ -77,8 +76,7 @@ def main():
             except Exception:
                 pass
         free_ports()
-        print("✓ All backend services stopped.")
-        sys.exit(0)
+        os._exit(0)
 
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
