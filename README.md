@@ -6,7 +6,7 @@
   
   **Next-Generation Offline Proctored Python Notebook & Zero-Trust Security IDE**
 
-  [![Release](https://img.shields.io/badge/Release-v1.0.4-blue?style=for-the-badge&logo=github)](https://github.com/yash12345-ctrl/PyShield-Studio/releases)
+  [![Release](https://img.shields.io/badge/Release-v1.0.5-blue?style=for-the-badge&logo=github)](https://github.com/yash12345-ctrl/PyShield-Studio/releases)
   [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux-emerald?style=for-the-badge&logo=linux)](https://github.com/yash12345-ctrl/PyShield-Studio/releases)
   [![CI/CD](https://img.shields.io/badge/CI%2FCD-GitHub_Actions-purple?style=for-the-badge&logo=githubactions)](https://github.com/yash12345-ctrl/PyShield-Studio/actions)
   [![License](https://img.shields.io/badge/License-MIT-amber?style=for-the-badge)](LICENSE)
@@ -38,12 +38,12 @@ Pre-built binaries for **Windows** and **Linux** are compiled and published auto
 
 | Operating System | Package Type | Architecture | Description & Quick Install |
 | :--- | :--- | :--- | :--- |
-| **🐧 Linux** | **`.deb` Package** | `x86_64 / amd64` | `sudo dpkg -i pyshield-studio_1.0.4_amd64.deb` *(Native Ubuntu/Debian integration)* |
-| **🐧 Linux** | **`AppImage`** | `x86_64` | `chmod +x PyShield-Studio-1.0.4.AppImage && ./PyShield-Studio-1.0.4.AppImage` |
-| **🪟 Windows** | **Setup `.exe`** | `x64` | Full setup wizard (path picker, desktop shortcut, PATH variable) |
+| **🐧 Linux** | **`.deb` Package** | `x86_64 / amd64` | `sudo dpkg -i pyshield-studio_1.0.5_amd64.deb` *(Native Ubuntu/Debian integration)* |
+| **🐧 Linux** | **`AppImage`** | `x86_64` | `chmod +x PyShield-Studio-1.0.5.AppImage && ./PyShield-Studio-1.0.5.AppImage` |
+| **🪟 Windows** | **Setup `.exe`** | `x64` | Full setup wizard (`C:\Program Files` default, path picker, desktop shortcut, PATH variable) |
 | **🪟 Windows** | **Portable `.zip`** | `x64` | Standalone portable executable |
 
-👉 **[Download Latest v1.0.4 Releases Here](https://github.com/yash12345-ctrl/PyShield-Studio/releases/tag/v1.0.4)**
+👉 **[Download Latest v1.0.5 Releases Here](https://github.com/yash12345-ctrl/PyShield-Studio/releases/tag/v1.0.5)**
 
 ---
 

@@ -8,24 +8,35 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PROJECT_ROOT)
 os.chdir(PROJECT_ROOT)
 
-PYTHON_EXE = sys.executable
+PYTHON_EXE = os.environ.get("PYSHIELD_PYTHON_EXE", sys.executable)
 
 def free_ports(ports=(5001,)):
     """Automatically frees the HTTP/WS bridge port if occupied by stale processes."""
-    for port in ports:
-        try:
-            subprocess.run(
-                ["fuser", "-k", f"{port}/tcp"],
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
-        except Exception:
-            pass
+    try:
+        import psutil
+        current_pid = os.getpid()
+        for conn in psutil.net_connections(kind='inet'):
+            if conn.laddr and conn.laddr.port in ports and conn.pid and conn.pid != current_pid:
+                try:
+                    p = psutil.Process(conn.pid)
+                    p.terminate()
+                except Exception:
+                    pass
+    except Exception:
+        for port in ports:
+            try:
+                subprocess.run(
+                    ["fuser", "-k", f"{port}/tcp"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+            except Exception:
+                pass
     time.sleep(0.3)
 
 def cleanup_stale_connections():
     """Removes any stale .kernel_connections left from previous runs."""
-    conn_dir = os.path.join(PROJECT_ROOT, ".kernel_connections")
+    conn_dir = os.environ.get("PYSHIELD_CONNECTIONS_DIR", os.path.join(PROJECT_ROOT, ".kernel_connections"))
     if os.path.exists(conn_dir):
         for f in os.listdir(conn_dir):
             if f.endswith(".json"):
@@ -44,7 +55,7 @@ def main():
     cleanup_stale_connections()
 
     # Start WebSocket & REST Bridge Server (Tornado with MappingKernelManager supervisor)
-    bridge_script = os.path.join(PROJECT_ROOT, "backend", "zmq_bridge_server.py")
+    bridge_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "zmq_bridge_server.py")
     print("\nStarting PyShield Server with Ephemeral Dynamic Kernel Concurrency...")
     bridge_proc = subprocess.Popen([PYTHON_EXE, bridge_script])
 

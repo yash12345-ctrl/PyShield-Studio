@@ -1,39 +1,41 @@
 {
-  "current_version": "1.0.3",
-  "latest_version": "1.0.4",
+  "current_version": "1.0.5",
+  "latest_version": "1.0.5",
   "release_date": "October 2026",
   "channel": "stable",
   "mandatory": false,
   "changelog": [
-    "Interactive Windows setup wizard with custom directory path picker",
-    "Optional desktop shortcut and system PATH integration checkboxes",
+    "100% Offline execution engine: zero external CDN dependencies, local Monaco Editor, and offline database",
+    "Isolated user data and kernel state: SQLite DB and kernel connections stored in user AppData (no Program Files write permission issues)",
+    "Default installation path set to C:\\Program Files\\PyShield Studio with Browse directory picker",
+    "Full system-wide integration with HKLM and HKCU PATH environment updates",
+    "Interactive Windows setup wizard with desktop shortcut & PATH options",
     "Native .ipynb notebook file association and Explorer context menu",
-    "Clean uninstaller with environment PATH and registry cleanup",
-    "Automated CI/CD multi-platform build & release pipeline"
+    "Clean uninstaller with environment PATH and registry cleanup"
   ],
-  "download_url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/tag/v1.0.4",
+  "download_url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/tag/v1.0.5",
   "downloads": {
     "windows": {
       "name": "Windows Setup Installer (.exe)",
-      "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.4/PyShield.Studio.Setup.1.0.4.exe",
+      "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.5/PyShield.Studio.Setup.1.0.5.exe",
       "size": "156 MB",
-      "filename": "PyShield Studio Setup 1.0.4.exe"
+      "filename": "PyShield Studio Setup 1.0.5.exe"
     },
     "linux": {
       "appimage": {
         "name": "Linux Universal AppImage",
-        "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.4/PyShield-Studio-1.0.4.AppImage",
+        "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.5/PyShield-Studio-1.0.5.AppImage",
         "size": "125 MB",
-        "filename": "PyShield Studio-1.0.4.AppImage"
+        "filename": "PyShield Studio-1.0.5.AppImage"
       },
       "deb": {
         "name": "Debian / Ubuntu Package (.deb)",
-        "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.4/pyshield-studio_1.0.4_amd64.deb",
+        "url": "https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v1.0.5/pyshield-studio_1.0.5_amd64.deb",
         "size": "95 MB",
-        "filename": "pyshield-studio_1.0.4_amd64.deb"
+        "filename": "pyshield-studio_1.0.5_amd64.deb"
       }
     }
   },
   "package_size": "95 MB - 156 MB",
-  "checksum": "sha256-v104-release"
+  "checksum": "sha256-v105-release"
 }

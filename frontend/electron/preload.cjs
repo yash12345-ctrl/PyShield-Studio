@@ -1,7 +1,9 @@
 const { contextBridge } = require('electron');
+const packageJson = require('../package.json');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   platform: process.platform,
   isDesktop: true,
-  appVersion: '1.0.0'
+  appVersion: packageJson.version || '1.0.5'
 });
+

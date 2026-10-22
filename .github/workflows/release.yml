@@ -41,6 +41,19 @@ jobs:
         working-directory: frontend
         run: npm ci
 
+      # Set up Python for Windows standalone bundle
+      - name: Setup Python
+        if: matrix.platform == 'windows'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # Prepare standalone offline Python runtime with pre-installed requirements
+      - name: Prepare Offline Python Runtime
+        if: matrix.platform == 'windows'
+        run: |
+          python scripts/prepare_offline_python.py --platform windows
+
       # Build Windows packages on real Windows runner
       - name: Build Windows Package
         if: matrix.platform == 'windows'

@@ -6,7 +6,7 @@ from typing import Optional, Dict, Any, List
 
 from database.seed_data import seed_all_datasets
 
-DB_PATH = os.path.join(os.path.dirname(__file__), "pyshield.db")
+DB_PATH = os.environ.get("PYSHIELD_DB_PATH", os.path.join(os.path.dirname(__file__), "pyshield.db"))
 SCHEMA_PATH = os.path.join(os.path.dirname(__file__), "schema.sql")
 
 def hash_password(password: str, salt: str = "pyshield_offline_salt") -> str:
@@ -16,6 +16,7 @@ def hash_password(password: str, salt: str = "pyshield_offline_salt") -> str:
 class DatabaseManager:
     def __init__(self, db_path: str = DB_PATH):
         self.db_path = db_path
+        os.makedirs(os.path.dirname(os.path.abspath(self.db_path)), exist_ok=True)
         self.init_db()
 
     def get_connection(self) -> sqlite3.Connection:

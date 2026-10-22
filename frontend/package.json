@@ -25,6 +25,7 @@
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "lucide-react": "^1.57.0",
+    "monaco-editor": "^0.57.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
@@ -50,6 +51,39 @@
       "dist/**/*",
       "electron/**/*",
       "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../backend",
+        "to": "backend",
+        "filter": [
+          "**/*",
+          "!**/__pycache__/**",
+          "!**/*.pyc",
+          "!**/.pytest_cache/**"
+        ]
+      },
+      {
+        "from": "../database",
+        "to": "database",
+        "filter": [
+          "**/*",
+          "!**/__pycache__/**",
+          "!**/*.pyc",
+          "!**/pyshield.db"
+        ]
+      },
+      {
+        "from": "../version.json",
+        "to": "version.json"
+      },
+      {
+        "from": "python-runtime",
+        "to": "python-runtime",
+        "filter": [
+          "**/*"
+        ]
+      }
     ],
     "linux": {
       "icon": "electron/icons",

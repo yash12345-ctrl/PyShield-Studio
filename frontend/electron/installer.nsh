@@ -139,22 +139,33 @@ FunctionEnd
     CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\${APP_EXECUTABLE_FILENAME}" "" "$INSTDIR\${APP_EXECUTABLE_FILENAME}" 0
   ${EndIf}
 
-  ; 2. Add to User PATH if checked
+  ; 2. Add to PATH if checked (Handles both Per-Machine HKLM and Per-User HKCU)
   ${If} $CheckboxPath_State == 1
-    DetailPrint "Adding $INSTDIR to User PATH..."
+    DetailPrint "Adding $INSTDIR to system PATH..."
     Push $R0
     Push $R1
     Push $R2
 
-    ReadRegStr $R0 HKCU "Environment" "PATH"
-    ${If} $R0 != ""
-      StrCpy $R1 "$R0;$INSTDIR"
+    ${If} $installMode == "all"
+      ; System-wide PATH in HKLM
+      ReadRegStr $R0 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "PATH"
+      ${If} $R0 != ""
+        StrCpy $R1 "$R0;$INSTDIR"
+      ${Else}
+        StrCpy $R1 "$INSTDIR"
+      ${EndIf}
+      WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "PATH" "$R1"
     ${Else}
-      StrCpy $R1 "$INSTDIR"
+      ; Per-user PATH in HKCU
+      ReadRegStr $R0 HKCU "Environment" "PATH"
+      ${If} $R0 != ""
+        StrCpy $R1 "$R0;$INSTDIR"
+      ${Else}
+        StrCpy $R1 "$INSTDIR"
+      ${EndIf}
+      WriteRegExpandStr HKCU "Environment" "PATH" "$R1"
     ${EndIf}
 
-    WriteRegExpandStr HKCU "Environment" "PATH" "$R1"
-    
     ; Broadcast WM_SETTINGCHANGE so Windows Explorer & open terminals pick up PATH
     System::Call 'user32::SendMessageTimeout(i 0xffff, i 0x001A, i 0, t "Environment", i 0, i 5000, *i .R2)'
     
@@ -181,23 +192,46 @@ FunctionEnd
   Push $R0
   Push $R1
   Push $R2
-  ReadRegStr $R0 HKCU "Environment" "PATH"
+
+  ; Clean up HKLM system PATH
+  ReadRegStr $R0 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "PATH"
   ${If} $R0 != ""
-    ; Remove ";$INSTDIR"
     Push "$R0"
     Push ";$INSTDIR"
     Push ""
     Call un.StrRep
     Pop $R1
 
-    ; Remove "$INSTDIR;"
     Push "$R1"
     Push "$INSTDIR;"
     Push ""
     Call un.StrRep
     Pop $R1
 
-    ; Remove "$INSTDIR" (if it was the only entry)
+    Push "$R1"
+    Push "$INSTDIR"
+    Push ""
+    Call un.StrRep
+    Pop $R1
+
+    WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "PATH" "$R1"
+  ${EndIf}
+
+  ; Clean up HKCU user PATH
+  ReadRegStr $R0 HKCU "Environment" "PATH"
+  ${If} $R0 != ""
+    Push "$R0"
+    Push ";$INSTDIR"
+    Push ""
+    Call un.StrRep
+    Pop $R1
+
+    Push "$R1"
+    Push "$INSTDIR;"
+    Push ""
+    Call un.StrRep
+    Pop $R1
+
     Push "$R1"
     Push "$INSTDIR"
     Push ""
@@ -205,8 +239,10 @@ FunctionEnd
     Pop $R1
 
     WriteRegExpandStr HKCU "Environment" "PATH" "$R1"
-    System::Call 'user32::SendMessageTimeout(i 0xffff, i 0x001A, i 0, t "Environment", i 0, i 5000, *i .R2)'
   ${EndIf}
+
+  System::Call 'user32::SendMessageTimeout(i 0xffff, i 0x001A, i 0, t "Environment", i 0, i 5000, *i .R2)'
+
   Pop $R2
   Pop $R1
   Pop $R0

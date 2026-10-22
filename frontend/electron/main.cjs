@@ -7,9 +7,9 @@ const fs = require('fs');
 let mainWindow = null;
 let backendProcess = null;
 
-// Determine paths
+// Determine environment & directories
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged;
-const appRootDir = path.resolve(__dirname, '../../');
+const appRootDir = isDev ? path.resolve(__dirname, '../../') : process.resourcesPath;
 const frontendDist = path.join(__dirname, '../dist/index.html');
 
 // Pick best icon based on platform
@@ -20,7 +20,7 @@ const getIconPath = () => {
   return path.join(__dirname, 'icons', 'icon.png');
 };
 
-// Check if backend is already running on port 5001
+// Check if backend is already healthy on 127.0.0.1:5001
 function checkBackendHealth() {
   return new Promise((resolve) => {
     const req = http.get('http://127.0.0.1:5001/api/health', (res) => {
@@ -29,53 +29,239 @@ function checkBackendHealth() {
     req.on('error', () => {
       resolve(false);
     });
-    req.setTimeout(1000, () => {
+    req.setTimeout(800, () => {
       req.destroy();
       resolve(false);
     });
   });
 }
 
+// Repeatedly wait for backend to respond healthy
+async function waitForBackendReady(maxAttempts = 30, intervalMs = 250) {
+  for (let i = 0; i < maxAttempts; i++) {
+    const alive = await checkBackendHealth();
+    if (alive) return true;
+    await new Promise((r) => setTimeout(r, intervalMs));
+  }
+  return false;
+}
+
+// Find Python binary or standalone backend executable
+function resolvePythonBackend() {
+  const isWindows = process.platform === 'win32';
+
+  // 1. Check for standalone frozen binary (e.g. from PyInstaller in resources/python-runtime)
+  const frozenCandidates = isWindows
+    ? [
+        path.join(process.resourcesPath, 'python-runtime', 'pyshield-backend.exe'),
+        path.join(process.resourcesPath, 'backend', 'pyshield-backend.exe'),
+        path.join(appRootDir, 'backend', 'dist', 'pyshield-backend', 'pyshield-backend.exe')
+      ]
+    : [
+        path.join(process.resourcesPath, 'python-runtime', 'pyshield-backend'),
+        path.join(process.resourcesPath, 'backend', 'pyshield-backend'),
+        path.join(appRootDir, 'backend', 'dist', 'pyshield-backend', 'pyshield-backend')
+      ];
+
+  for (const frozen of frozenCandidates) {
+    if (fs.existsSync(frozen)) {
+      return { type: 'frozen', executable: frozen, args: [] };
+    }
+  }
+
+  // 2. Locate run_backend.py script
+  const scriptCandidates = [
+    path.join(process.resourcesPath, 'backend', 'run_backend.py'),
+    path.join(appRootDir, 'backend', 'run_backend.py'),
+    path.resolve(__dirname, '../../backend/run_backend.py')
+  ];
+
+  let runScript = null;
+  for (const s of scriptCandidates) {
+    if (fs.existsSync(s)) {
+      runScript = s;
+      break;
+    }
+  }
+
+  // 3. Search for Python interpreter (bundled portable Python, venv, or system)
+  const pythonCandidates = [];
+
+  // A. Bundled portable Python inside resources (offline runtime)
+  if (isWindows) {
+    pythonCandidates.push(
+      path.join(process.resourcesPath, 'python', 'python.exe'),
+      path.join(process.resourcesPath, 'python-runtime', 'python.exe'),
+      path.join(process.resourcesPath, '.venv', 'Scripts', 'python.exe')
+    );
+  } else {
+    pythonCandidates.push(
+      path.join(process.resourcesPath, 'python', 'bin', 'python3'),
+      path.join(process.resourcesPath, 'python-runtime', 'bin', 'python3'),
+      path.join(process.resourcesPath, '.venv', 'bin', 'python')
+    );
+  }
+
+  // B. Workspace virtual environment (for dev and local execution)
+  const localDevRoot = path.resolve(__dirname, '../../');
+  if (isWindows) {
+    pythonCandidates.push(
+      path.join(appRootDir, '.venv', 'Scripts', 'python.exe'),
+      path.join(localDevRoot, '.venv', 'Scripts', 'python.exe')
+    );
+  } else {
+    pythonCandidates.push(
+      path.join(appRootDir, '.venv', 'bin', 'python'),
+      path.join(localDevRoot, '.venv', 'bin', 'python')
+    );
+  }
+
+  // C. Windows system install paths
+  if (isWindows) {
+    const localAppData = process.env.LOCALAPPDATA || '';
+    if (localAppData) {
+      pythonCandidates.push(
+        path.join(localAppData, 'Programs', 'Python', 'Python312', 'python.exe'),
+        path.join(localAppData, 'Programs', 'Python', 'Python311', 'python.exe'),
+        path.join(localAppData, 'Programs', 'Python', 'Python310', 'python.exe')
+      );
+    }
+    pythonCandidates.push(
+      'C:\\Python312\\python.exe',
+      'C:\\Python311\\python.exe',
+      'C:\\Python310\\python.exe',
+      'python.exe',
+      'py.exe'
+    );
+  } else {
+    // Linux / macOS system paths
+    pythonCandidates.push(
+      '/usr/bin/python3',
+      '/usr/local/bin/python3',
+      'python3',
+      'python'
+    );
+  }
+
+  let chosenPython = null;
+  for (const py of pythonCandidates) {
+    if (py.includes(path.sep)) {
+      if (fs.existsSync(py)) {
+        chosenPython = py;
+        break;
+      }
+    } else {
+      chosenPython = py;
+      break;
+    }
+  }
+
+  if (!chosenPython) {
+    chosenPython = isWindows ? 'python.exe' : 'python3';
+  }
+
+  return {
+    type: 'script',
+    executable: chosenPython,
+    args: runScript ? [runScript] : []
+  };
+}
+
 // Start backend if not already active
 async function ensureBackendRunning() {
   const isRunning = await checkBackendHealth();
   if (isRunning) {
-    console.log('[Desktop] Python backend is already running on port 5001.');
+    console.log('[Desktop] Local Python backend is already active on port 5001.');
     return;
   }
 
-  console.log('[Desktop] Starting local Python backend...');
+  console.log('[Desktop] Initializing local offline Python backend...');
 
-  // Search for Python virtualenv or system python
-  let pythonBin = 'python3';
-  const venvPythonLinux = path.join(appRootDir, '.venv', 'bin', 'python');
-  const venvPythonWin = path.join(appRootDir, '.venv', 'Scripts', 'python.exe');
-  const runScript = path.join(appRootDir, 'backend', 'run_backend.py');
+  // Setup writable user data directories (avoid writing to C:\Program Files\)
+  const userDataDir = app.getPath('userData');
+  const dbPath = path.join(userDataDir, 'pyshield.db');
+  const connectionsDir = path.join(userDataDir, 'kernel_connections');
+  const logPath = path.join(userDataDir, 'backend.log');
 
-  if (fs.existsSync(venvPythonLinux)) {
-    pythonBin = venvPythonLinux;
-  } else if (fs.existsSync(venvPythonWin)) {
-    pythonBin = venvPythonWin;
+  try {
+    fs.mkdirSync(userDataDir, { recursive: true });
+    fs.mkdirSync(connectionsDir, { recursive: true });
+  } catch (err) {
+    console.warn('[Desktop] Warning creating userData subdirs:', err.message);
   }
 
-  if (fs.existsSync(runScript)) {
-    try {
-      backendProcess = spawn(pythonBin, [runScript], {
-        cwd: appRootDir,
-        detached: false,
-        stdio: 'ignore'
-      });
+  const backendConfig = resolvePythonBackend();
+  const logStream = fs.createWriteStream(logPath, { flags: 'a' });
 
-      backendProcess.on('error', (err) => {
-        console.error('[Desktop] Failed to launch backend:', err.message);
-      });
+  console.log(`[Desktop] Resolved backend target:`, backendConfig);
+  console.log(`[Desktop] User database target: ${dbPath}`);
+  console.log(`[Desktop] Connections target: ${connectionsDir}`);
 
-      console.log(`[Desktop] Spawned backend (PID: ${backendProcess.pid}) with ${pythonBin}`);
-    } catch (e) {
-      console.error('[Desktop] Error spawning backend process:', e);
+  if (backendConfig.type === 'script' && backendConfig.args.length === 0) {
+    console.warn('[Desktop] Warning: run_backend.py script could not be found.');
+    return;
+  }
+
+  const backendEnv = {
+    ...process.env,
+    PYSHIELD_USER_DATA: userDataDir,
+    PYSHIELD_DB_PATH: dbPath,
+    PYSHIELD_CONNECTIONS_DIR: connectionsDir,
+    PYSHIELD_RESOURCES_DIR: isDev ? path.resolve(__dirname, '../../') : process.resourcesPath,
+    PYSHIELD_PYTHON_EXE: backendConfig.executable,
+    PYTHONUNBUFFERED: '1',
+    PYTHONIOENCODING: 'utf-8'
+  };
+
+  const workDir = isDev
+    ? path.resolve(__dirname, '../../')
+    : fs.existsSync(path.join(process.resourcesPath, 'backend'))
+      ? path.join(process.resourcesPath, 'backend')
+      : process.resourcesPath;
+
+  try {
+    backendProcess = spawn(backendConfig.executable, backendConfig.args, {
+      cwd: workDir,
+      env: backendEnv,
+      detached: false,
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+
+    if (backendProcess.stdout) {
+      backendProcess.stdout.pipe(logStream);
+      backendProcess.stdout.on('data', (d) => {
+        if (isDev) process.stdout.write(`[Backend stdout] ${d}`);
+      });
     }
-  } else {
-    console.warn('[Desktop] backend/run_backend.py not found at', runScript);
+
+    if (backendProcess.stderr) {
+      backendProcess.stderr.pipe(logStream);
+      backendProcess.stderr.on('data', (d) => {
+        if (isDev) process.stderr.write(`[Backend stderr] ${d}`);
+      });
+    }
+
+    backendProcess.on('error', (err) => {
+      console.error('[Desktop] Failed to launch backend process:', err.message);
+      fs.appendFileSync(logPath, `[Launch Error] ${err.message}\n`);
+    });
+
+    backendProcess.on('exit', (code, sig) => {
+      console.log(`[Desktop] Backend exited with code: ${code}, signal: ${sig}`);
+      fs.appendFileSync(logPath, `[Exit] Code: ${code}, Signal: ${sig}\n`);
+    });
+
+    console.log(`[Desktop] Spawned backend (PID: ${backendProcess.pid})`);
+
+    // Wait for the backend to pass health check before opening UI
+    const ready = await waitForBackendReady(30, 250);
+    if (ready) {
+      console.log('✓ [Desktop] Local backend successfully confirmed healthy on http://127.0.0.1:5001');
+    } else {
+      console.warn('⚠️ [Desktop] Backend startup timed out after 7.5s, UI will continue...');
+    }
+  } catch (e) {
+    console.error('[Desktop] Exception spawning backend process:', e);
   }
 }
 
@@ -113,6 +299,11 @@ function createMainWindow() {
     return { action: 'allow' };
   });
 
+  // Globally disable right-click context menu across all pages (Proctored Examination Mode)
+  mainWindow.webContents.on('context-menu', (e) => {
+    e.preventDefault();
+  });
+
   // Load URL
   if (isDev && process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
@@ -130,11 +321,12 @@ function createMainWindow() {
 }
 
 function setupMenu() {
+  const version = app.getVersion();
   const template = [
     {
       label: 'PyShield Studio',
       submenu: [
-        { label: 'About PyShield Studio v1.0.0', role: 'about' },
+        { label: `About PyShield Studio v${version}`, role: 'about' },
         { type: 'separator' },
         { label: 'Quit', accelerator: 'CmdOrCtrl+Q', click: () => app.quit() }
       ]
@@ -218,6 +410,13 @@ function cleanUpBackend() {
     try {
       console.log('[Desktop] Terminating backend process...');
       backendProcess.kill('SIGTERM');
+      setTimeout(() => {
+        if (backendProcess && !backendProcess.killed) {
+          try {
+            backendProcess.kill('SIGKILL');
+          } catch (_) {}
+        }
+      }, 1000);
       backendProcess = null;
     } catch (e) {
       console.error('[Desktop] Error closing backend process:', e);

@@ -16,9 +16,10 @@ if PROJECT_ROOT not in sys.path:
 
 from backend.zmq_client import ZMQKernelClient
 
-CONNECTION_DIR = os.path.join(PROJECT_ROOT, ".kernel_connections")
-KERNEL_SERVER_SCRIPT = os.path.join(PROJECT_ROOT, "backend", "zmq_kernel_server.py")
-PYTHON_EXE = sys.executable
+CONNECTION_DIR = os.environ.get("PYSHIELD_CONNECTIONS_DIR", os.path.join(PROJECT_ROOT, ".kernel_connections"))
+os.makedirs(CONNECTION_DIR, exist_ok=True)
+KERNEL_SERVER_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "zmq_kernel_server.py")
+PYTHON_EXE = os.environ.get("PYSHIELD_PYTHON_EXE", sys.executable)
 
 def find_available_ports(count: int = 5, ip: str = "127.0.0.1") -> List[int]:
     """

@@ -18,14 +18,14 @@ const getEnvBackendUrl = (): string => {
     return (import.meta.env.VITE_BACKEND_URL as string).replace(/\/$/, '');
   }
 
-  // Desktop App connects to Cloud backend so friends can run it without needing Python installed
+  // Desktop App connects to local offline backend spawned on 127.0.0.1:5001
   if (isElectron()) {
-    return CLOUD_API_URL;
+    return 'http://127.0.0.1:5001';
   }
 
-  // If on Vercel, use relative paths so Vercel rewrites proxy /api directly to the backend
+  // If on Vercel, connect to cloud backend
   if (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app')) {
-    return '';
+    return CLOUD_API_URL;
   }
 
   // If running in browser and not on localhost, use current hostname on port 5001
@@ -42,9 +42,9 @@ const getEnvWsUrl = (): string => {
     return (import.meta.env.VITE_WS_URL as string).replace(/\/$/, '');
   }
 
-  // Desktop App connects to secure WebSocket on Cloud backend
+  // Desktop App connects to local offline WebSocket on 127.0.0.1:5001
   if (isElectron()) {
-    return CLOUD_WS_URL;
+    return 'ws://127.0.0.1:5001';
   }
 
   // If on Vercel (HTTPS), connect to the secure SSL domain on Google Cloud

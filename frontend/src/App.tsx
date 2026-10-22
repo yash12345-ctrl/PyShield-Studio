@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './App.css';
 import { LoginScreen } from './components/LoginScreen';
 import { NotebookWorkspace } from './components/NotebookWorkspace';
@@ -18,6 +18,18 @@ interface ActiveSession {
 }
 
 function App() {
+  // Globally disable right-click context menu across all pages & views for proctored security
+  useEffect(() => {
+    const handleContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
+    window.addEventListener('contextmenu', handleContextMenu, { capture: true });
+    return () => {
+      window.removeEventListener('contextmenu', handleContextMenu, { capture: true });
+    };
+  }, []);
+
   const [session, setSession] = useState<ActiveSession | null>(() => {
     try {
       // Read from sessionStorage first, fallback to localStorage so closing the app window does not log out

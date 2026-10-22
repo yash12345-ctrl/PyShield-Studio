@@ -152,8 +152,10 @@ class HealthHandler(BaseApiHandler):
 
 class VersionHandler(BaseApiHandler):
     def get(self, *args: Any, **kwargs: Any) -> None:
-        self.set_header("Content-Type", "application/json")
-        version_file = os.path.join(PROJECT_ROOT, "version.json")
+        resources_dir = os.environ.get("PYSHIELD_RESOURCES_DIR", PROJECT_ROOT)
+        version_file = os.path.join(resources_dir, "version.json")
+        if not os.path.exists(version_file):
+            version_file = os.path.join(PROJECT_ROOT, "version.json")
         if not os.path.exists(version_file):
             version_file = os.path.join(PROJECT_ROOT, "frontend", "public", "version.json")
 
