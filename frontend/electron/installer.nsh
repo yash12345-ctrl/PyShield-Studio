@@ -11,6 +11,7 @@
 ; Disable NSIS strict compiler warnings treated as errors by electron-builder (-WX)
 !pragma warning disable 6000
 !pragma warning disable 6001
+!pragma warning disable 6020
 
 !include "nsDialogs.nsh"
 !include "LogicLib.nsh"
@@ -24,10 +25,10 @@ Var CheckboxPath
 Var CheckboxPath_State
 
 ; ------------------------------------------------------------------------------
-; Helper Macro: String Replace (for uninstaller PATH cleanup)
+; Helper Macro: String Replace (Only compiled for uninstaller to prevent warning 6020)
 ; ------------------------------------------------------------------------------
-!macro DefineStrRep UN
-Function ${UN}StrRep
+!ifdef BUILD_UNINSTALLER
+Function un.StrRep
   Exch $R2 ; ReplacementString
   Exch
   Exch $R1 ; SearchString
@@ -71,9 +72,7 @@ Function ${UN}StrRep
     Exch
     Pop $R1
 FunctionEnd
-!macroend
-
-!insertmacro DefineStrRep "un."
+!endif
 
 ; ------------------------------------------------------------------------------
 ; Installer Wizard Page (Skipped when building uninstaller binary)
