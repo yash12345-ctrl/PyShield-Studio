@@ -8,6 +8,7 @@
 ; 4. Clean Uninstaller to remove shortcuts and PATH entries
 ; ==============================================================================
 
+!include "MUI2.nsh"
 !include "nsDialogs.nsh"
 !include "LogicLib.nsh"
 
@@ -63,7 +64,11 @@ FunctionEnd
 
 !insertmacro DefineStrRep "un."
 
+; ------------------------------------------------------------------------------
+; Installer UI Only (Excluded during Uninstaller Generation)
+; ------------------------------------------------------------------------------
 !ifndef BUILD_UNINSTALLER
+!ifndef UNINSTALLER_OUT_FILE
 
 Var TasksDialog
 Var CheckboxDesktop
@@ -78,7 +83,9 @@ Var CheckboxPath_State
 !macroend
 
 Function AdditionalTasksPageCreate
-  !insertmacro MUI_HEADER_TEXT "Select Additional Tasks" "Which additional tasks should be performed?"
+  !ifdef MUI_HEADER_TEXT
+    !insertmacro MUI_HEADER_TEXT "Select Additional Tasks" "Which additional tasks should be performed?"
+  !endif
 
   nsDialogs::Create 1018
   Pop $TasksDialog
@@ -119,6 +126,7 @@ Function AdditionalTasksPageLeave
   ${NSD_GetState} $CheckboxPath $CheckboxPath_State
 FunctionEnd
 
+!endif
 !endif
 
 ; ------------------------------------------------------------------------------
