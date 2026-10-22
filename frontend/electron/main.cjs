@@ -1,6 +1,7 @@
-const { app, BrowserWindow, shell, Menu } = require('electron');
+const { app, BrowserWindow, shell, Menu, ipcMain } = require('electron');
 const path = require('path');
 const http = require('http');
+const https = require('https');
 const { spawn } = require('child_process');
 const fs = require('fs');
 
@@ -430,4 +431,157 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
   }
+});
+
+// --- In-App Auto-Update Downloader & Installer ---
+let downloadedInstallerPath = null;
+
+function downloadFileWithRedirects(fileUrl, destPath, onProgress, maxRedirects = 6) {
+  return new Promise((resolve, reject) => {
+    if (maxRedirects <= 0) {
+      return reject(new Error('Too many redirects while downloading update.'));
+    }
+
+    const client = fileUrl.startsWith('https') ? https : http;
+    const req = client.get(fileUrl, { headers: { 'User-Agent': 'PyShield-Studio-AutoUpdater' } }, (res) => {
+      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        res.resume();
+        return downloadFileWithRedirects(res.headers.location, destPath, onProgress, maxRedirects - 1)
+          .then(resolve)
+          .catch(reject);
+      }
+
+      if (res.statusCode !== 200) {
+        res.resume();
+        return reject(new Error(`Server returned HTTP ${res.statusCode}`));
+      }
+
+      const totalBytes = parseInt(res.headers['content-length'] || '0', 10);
+      let downloadedBytes = 0;
+      let lastTime = Date.now();
+      let lastBytes = 0;
+      let speedMbSec = '0.0';
+
+      const fileStream = fs.createWriteStream(destPath);
+
+      res.on('data', (chunk) => {
+        downloadedBytes += chunk.length;
+        const now = Date.now();
+        if (now - lastTime >= 250) {
+          const deltaBytes = downloadedBytes - lastBytes;
+          const deltaSec = (now - lastTime) / 1000;
+          if (deltaSec > 0) {
+            speedMbSec = ((deltaBytes / (1024 * 1024)) / deltaSec).toFixed(1);
+          }
+          lastTime = now;
+          lastBytes = downloadedBytes;
+
+          const percent = totalBytes > 0 ? Math.min(100, Math.round((downloadedBytes / totalBytes) * 100)) : 0;
+          if (typeof onProgress === 'function') {
+            onProgress({
+              percent,
+              downloadedMb: (downloadedBytes / (1024 * 1024)).toFixed(1),
+              totalMb: totalBytes > 0 ? (totalBytes / (1024 * 1024)).toFixed(1) : 'Unknown',
+              speedMbSec
+            });
+          }
+        }
+      });
+
+      res.pipe(fileStream);
+
+      fileStream.on('finish', () => {
+        fileStream.close(() => {
+          if (typeof onProgress === 'function') {
+            onProgress({
+              percent: 100,
+              downloadedMb: (downloadedBytes / (1024 * 1024)).toFixed(1),
+              totalMb: (downloadedBytes / (1024 * 1024)).toFixed(1),
+              speedMbSec: '0.0'
+            });
+          }
+          resolve(destPath);
+        });
+      });
+
+      fileStream.on('error', (err) => {
+        try { fs.unlinkSync(destPath); } catch (_) {}
+        reject(err);
+      });
+    });
+
+    req.on('error', (err) => {
+      try { fs.unlinkSync(destPath); } catch (_) {}
+      reject(err);
+    });
+  });
+}
+
+// IPC Handlers for Auto-Update
+ipcMain.handle('updater:start-download', async (event, { downloadUrl, version }) => {
+  if (!downloadUrl) {
+    throw new Error('Download URL is required.');
+  }
+
+  const isWindows = process.platform === 'win32';
+  const ext = isWindows ? '.exe' : (downloadUrl.endsWith('.deb') ? '.deb' : '.AppImage');
+  const tempDir = app.getPath('temp');
+  const destPath = path.join(tempDir, `PyShield-Studio-Setup-${version || 'latest'}${ext}`);
+
+  console.log(`[Updater] Starting download from ${downloadUrl} to ${destPath}`);
+
+  try {
+    const downloadedPath = await downloadFileWithRedirects(downloadUrl, destPath, (progressData) => {
+      if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('updater:progress', progressData);
+      }
+    });
+
+    downloadedInstallerPath = downloadedPath;
+    console.log(`[Updater] Download successfully finished: ${downloadedPath}`);
+
+    if (mainWindow && !mainWindow.isDestroyed()) {
+      mainWindow.webContents.send('updater:downloaded', { filePath: downloadedPath });
+    }
+
+    return { status: 'success', filePath: downloadedPath };
+  } catch (err) {
+    console.error('[Updater] Download error:', err);
+    throw err;
+  }
+});
+
+ipcMain.handle('updater:install', async () => {
+  if (!downloadedInstallerPath || !fs.existsSync(downloadedInstallerPath)) {
+    throw new Error('No downloaded update installer found.');
+  }
+
+  console.log(`[Updater] Launching update installer: ${downloadedInstallerPath}`);
+
+  if (process.platform === 'win32') {
+    // Launch NSIS setup in detached mode
+    const child = spawn(downloadedInstallerPath, [], {
+      detached: true,
+      stdio: 'ignore'
+    });
+    child.unref();
+  } else {
+    // Linux
+    try {
+      fs.chmodSync(downloadedInstallerPath, 0o755);
+    } catch (_) {}
+
+    if (downloadedInstallerPath.endsWith('.deb')) {
+      spawn('xdg-open', [downloadedInstallerPath], { detached: true, stdio: 'ignore' }).unref();
+    } else {
+      spawn(downloadedInstallerPath, [], { detached: true, stdio: 'ignore' }).unref();
+    }
+  }
+
+  cleanUpBackend();
+  setTimeout(() => {
+    app.quit();
+  }, 600);
+
+  return { status: 'launching' };
 });

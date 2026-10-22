@@ -479,36 +479,65 @@ export const NotebookWorkspace: React.FC<NotebookWorkspaceProps> = ({ session, o
     const versionToInstall = targetVer || latestVersion;
     if (isUpdating || isUpdateReady) return;
 
+    const electronApi = (window as any).electronAPI;
+    const isDesktop = Boolean(electronApi?.isDesktop && electronApi?.startUpdateDownload);
+
     const osName = targetPlatform
       ? (targetPlatform === 'windows' ? 'Windows' : 'Linux')
-      : ((window as any).electronAPI?.platform === 'win32' ? 'Windows' : 'Linux');
-    const bundleName = osName === 'Windows'
-      ? `PyShield-Studio-v${versionToInstall}-Windows.zip`
-      : `pyshield-studio_${versionToInstall}_amd64.deb`;
-    const bundleSize = osName === 'Windows' ? '156 MB' : '95 MB';
+      : (electronApi?.platform === 'win32' ? 'Windows' : 'Linux');
+
+    // Resolve exact real installer download URL from GitHub Releases
+    let downloadUrl = '';
+    if (osName === 'Windows') {
+      downloadUrl = updateDownloads?.windows?.url ||
+        `https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v${versionToInstall}/PyShield.Studio.Setup.${versionToInstall}.exe`;
+    } else {
+      downloadUrl = updateDownloads?.linux?.deb?.url ||
+        updateDownloads?.linux?.appimage?.url ||
+        `https://github.com/yash12345-ctrl/PyShield-Studio/releases/download/v${versionToInstall}/pyshield-studio_${versionToInstall}_amd64.deb`;
+    }
+
+    if (!isDesktop) {
+      window.open(downloadUrl, '_blank');
+      showToast(`Opening download link for v${versionToInstall}...`);
+      return;
+    }
 
     setIsUpdating(true);
-    setUpdateProgress(12);
-    setUpdateStep(`Connecting to release distribution node for ${osName}...`);
+    setUpdateProgress(0);
+    setUpdateStep(`Connecting to GitHub release node for ${osName}...`);
 
-    await new Promise(r => setTimeout(r, 600));
-    setUpdateProgress(38);
-    setUpdateStep(`Downloading ${osName} bundle (${bundleName} - ${bundleSize})...`);
+    let cleanProgress: (() => void) | undefined;
+    let cleanDownloaded: (() => void) | undefined;
 
-    await new Promise(r => setTimeout(r, 700));
-    setUpdateProgress(72);
-    setUpdateStep(`Verifying cryptographic SHA-256 package hash for ${osName}...`);
+    if (electronApi.onUpdateProgress) {
+      cleanProgress = electronApi.onUpdateProgress((data: any) => {
+        setUpdateProgress(data.percent || 0);
+        setUpdateStep(`Downloading installer: ${data.downloadedMb} MB / ${data.totalMb} MB (${data.speedMbSec} MB/s)`);
+      });
+    }
 
-    await new Promise(r => setTimeout(r, 600));
-    setUpdateProgress(95);
-    setUpdateStep(`Staging ${osName} binary patches & finalizing installation...`);
+    if (electronApi.onUpdateDownloaded) {
+      cleanDownloaded = electronApi.onUpdateDownloaded((_data: any) => {
+        setIsUpdating(false);
+        setIsUpdateReady(true);
+        setUpdateProgress(100);
+        setUpdateStep(`Update v${versionToInstall} successfully downloaded! Ready to restart and apply.`);
+        showToast(`✓ PyShield Studio v${versionToInstall} downloaded! Restart to apply.`);
+        if (cleanProgress) cleanProgress();
+        if (cleanDownloaded) cleanDownloaded();
+      });
+    }
 
-    await new Promise(r => setTimeout(r, 500));
-    setUpdateProgress(100);
-    setUpdateStep(`Update v${versionToInstall} successfully installed for ${osName}! Ready to restart.`);
-    setIsUpdating(false);
-    setIsUpdateReady(true);
-    showToast(`✓ PyShield Studio v${versionToInstall} (${osName}) update ready! Restart to apply.`);
+    try {
+      await electronApi.startUpdateDownload(downloadUrl, versionToInstall);
+    } catch (err: any) {
+      setIsUpdating(false);
+      setUpdateStep(`Download error: ${err?.message || 'Network request failed'}`);
+      showToast(`⚠️ Update download failed: ${err?.message || 'Check network connection'}`);
+      if (cleanProgress) cleanProgress();
+      if (cleanDownloaded) cleanDownloaded();
+    }
   };
 
   const checkForUpdates = async (silent: boolean = false) => {
@@ -578,15 +607,24 @@ export const NotebookWorkspace: React.FC<NotebookWorkspaceProps> = ({ session, o
   };
 
   const applyRestart = () => {
-    localStorage.setItem('pyshield_app_version', latestVersion);
-    setCurrentVersion(latestVersion);
-    setHasUpdate(false);
-    setIsUpdateReady(false);
-    setUpdateProgress(0);
-    showToast(`Restarting PyShield Studio with v${latestVersion}...`);
-    setTimeout(() => {
-      window.location.reload();
-    }, 800);
+    const electronApi = (window as any).electronAPI;
+    if (electronApi?.installUpdate) {
+      localStorage.setItem('pyshield_app_version', latestVersion);
+      showToast(`Launching installer for v${latestVersion} and restarting...`);
+      electronApi.installUpdate().catch((err: any) => {
+        showToast(`Failed to launch installer: ${err?.message}`);
+      });
+    } else {
+      localStorage.setItem('pyshield_app_version', latestVersion);
+      setCurrentVersion(latestVersion);
+      setHasUpdate(false);
+      setIsUpdateReady(false);
+      setUpdateProgress(0);
+      showToast(`Restarting PyShield Studio with v${latestVersion}...`);
+      setTimeout(() => {
+        window.location.reload();
+      }, 800);
+    }
   };
 
   const simulateVersionBump = async (newVer: string) => {
