@@ -78,12 +78,18 @@ EOF
 
 # Set sandbox permissions and create postinst script
 chmod 4755 "$STAGING/opt/pyshield-studio/chrome-sandbox" 2>/dev/null || true
+if [ -d "$STAGING/opt/pyshield-studio/resources/python-runtime/bin" ]; then
+  chmod -R 0755 "$STAGING/opt/pyshield-studio/resources/python-runtime/bin" 2>/dev/null || true
+fi
 
 cat << "EOF" > "$STAGING/DEBIAN/postinst"
 #!/bin/sh
 set -e
 if [ -f "/opt/pyshield-studio/chrome-sandbox" ]; then
   chmod 4755 "/opt/pyshield-studio/chrome-sandbox" || true
+fi
+if [ -d "/opt/pyshield-studio/resources/python-runtime/bin" ]; then
+  chmod -R 0755 "/opt/pyshield-studio/resources/python-runtime/bin" || true
 fi
 EOF
 chmod 0755 "$STAGING/DEBIAN/postinst"
