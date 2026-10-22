@@ -3,6 +3,7 @@ import './App.css';
 import { LoginScreen } from './components/LoginScreen';
 import { NotebookWorkspace } from './components/NotebookWorkspace';
 import { SelectFolder } from './select_folder/select_folder';
+import { InternetDetector } from './detech/detech';
 
 const SESSION_STORAGE_KEY = 'pyshield_active_session';
 
@@ -96,38 +97,31 @@ function App() {
     setSession(null);
   };
 
-  // Step 1: Login Screen
-  if (!session) {
-    return (
-      <div className="app-viewport">
-        <LoginScreen onLoginSuccess={handleLoginSuccess} />
-      </div>
-    );
-  }
-
-  // Step 2: Select or Create Project Folder Screen
-  if (!session.selectedFolder) {
-    return (
-      <div className="app-viewport">
-        <SelectFolder
-          session={session}
-          onSelectFolder={handleFolderSelect}
-          onLogout={handleLogout}
-        />
-      </div>
-    );
-  }
-
-  // Step 3: Active Session View: Render the Interactive Monaco Editor Notebook Workspace
   return (
-    <div className="app-viewport">
-      <NotebookWorkspace
-        session={session}
-        onEndSession={handleLogout}
-        onSwitchFolder={() => handleFolderSelect('')}
-      />
-    </div>
+    <>
+      {/* Background Proctored Internet Detector - Locks screen immediately if Internet is ON */}
+      <InternetDetector />
+
+      <div className="app-viewport">
+        {!session ? (
+          <LoginScreen onLoginSuccess={handleLoginSuccess} />
+        ) : !session.selectedFolder ? (
+          <SelectFolder
+            session={session}
+            onSelectFolder={handleFolderSelect}
+            onLogout={handleLogout}
+          />
+        ) : (
+          <NotebookWorkspace
+            session={session}
+            onEndSession={handleLogout}
+            onSwitchFolder={() => handleFolderSelect('')}
+          />
+        )}
+      </div>
+    </>
   );
 }
 
 export default App;
+

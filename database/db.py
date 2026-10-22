@@ -27,7 +27,7 @@ class DatabaseManager:
     def init_db(self):
         """Initializes database tables from schema.sql and seeds offline lab datasets."""
         with self.get_connection() as conn:
-            with open(SCHEMA_PATH, 'r') as f:
+            with open(SCHEMA_PATH, 'r', encoding='utf-8') as f:
                 schema_sql = f.read()
             conn.executescript(schema_sql)
             conn.commit()
